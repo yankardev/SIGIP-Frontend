@@ -79,6 +79,12 @@ export class App {
     return this.orders.filter(order => !term || (order.code + ' ' + order.client + ' ' + order.product + ' ' + order.status).toLowerCase().includes(term));
   }
 
+  get productionCount(): number { return this.orders.filter(order => order.status === 'En producción').length; }
+  get readyCount(): number { return this.orders.filter(order => order.status === 'Por entregar').length; }
+  get completedCount(): number { return this.orders.filter(order => order.status === 'Completado').length; }
+
+  markAllRead(): void { this.notifications.forEach(notification => notification.unread = false); }
+
   get unreadCount(): number {
     return this.notifications.filter(notification => notification.unread).length;
   }
