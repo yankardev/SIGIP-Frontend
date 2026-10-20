@@ -1,0 +1,39 @@
+<div class="shell" [class.menu-abierto]="menuAbierto()">
+  <aside class="sidebar">
+    <a class="marca" routerLink="/inicio">
+      <span class="marca-logo">S</span>
+      <span>SIGIP<small>Imprenta</small></span>
+    </a>
+    <nav>
+      @for (o of opciones(); track o.ruta) {
+        <a [routerLink]="o.ruta" routerLinkActive="activo" (click)="menuAbierto.set(false)">
+          <span class="icono" aria-hidden="true">{{ o.icono }}</span>{{ o.texto }}
+        </a>
+      }
+    </nav>
+  </aside>
+
+  <div class="principal">
+    <header class="topbar">
+      <button type="button" class="btn-icono hamburguesa" aria-label="Menú" (click)="menuAbierto.set(!menuAbierto())">☰</button>
+      <span class="espaciador"></span>
+      <a class="campana" routerLink="/notificaciones" aria-label="Notificaciones">
+        ✉
+        @if (notificaciones.noLeidas() > 0) {
+          <span class="contador">{{ notificaciones.noLeidas() }}</span>
+        }
+      </a>
+      @if (auth.usuario(); as u) {
+        <div class="perfil">
+          <strong>{{ u.nombres }} {{ u.apellidos }}</strong>
+          <small>{{ u.nomusuario }} · {{ auth.esAdmin() ? 'Administrador' : 'Cliente' }}</small>
+        </div>
+      }
+      <button type="button" class="btn btn-secundario" (click)="auth.logout()">Salir</button>
+    </header>
+    <main class="contenido">
+      <router-outlet />
+    </main>
+  </div>
+  <div class="velo" (click)="menuAbierto.set(false)"></div>
+</div>

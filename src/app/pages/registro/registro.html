@@ -1,0 +1,43 @@
+<div class="acceso">
+  <form class="tarjeta acceso-tarjeta" [formGroup]="form" (ngSubmit)="registrar()">
+    <div class="marca marca-grande"><span class="marca-logo">S</span><span>SIGIP<small>Crea tu cuenta de cliente</small></span></div>
+    <h1>Registro</h1>
+
+    <div class="rejilla-2">
+      <label class="campo">
+        <span>Nombres</span>
+        <input formControlName="nombres" autocomplete="given-name" />
+        @if (invalido('nombres')) { <small class="error">Obligatorio</small> }
+      </label>
+      <label class="campo">
+        <span>Apellidos</span>
+        <input formControlName="apellidos" autocomplete="family-name" />
+        @if (invalido('apellidos')) { <small class="error">Obligatorio</small> }
+      </label>
+    </div>
+    <label class="campo">
+      <span>Correo</span>
+      <input type="email" formControlName="email" autocomplete="email" />
+      @if (invalido('email')) { <small class="error">Ingresa un correo válido</small> }
+    </label>
+    <label class="campo">
+      <span>Usuario</span>
+      <input formControlName="nomusuario" autocomplete="username" />
+      @if (invalido('nomusuario')) { <small class="error">Entre 4 y 50 caracteres</small> }
+    </label>
+    <label class="campo">
+      <span>Contraseña</span>
+      <input type="password" formControlName="password" autocomplete="new-password" />
+      @if (invalido('password')) { <small class="error">Mínimo 8 caracteres</small> }
+    </label>
+
+    @if (error()) {
+      <p class="alerta alerta-error">{{ error() }}</p>
+    }
+
+    <button class="btn btn-primario btn-bloque" [disabled]="cargando()">
+      {{ cargando() ? 'Creando cuenta…' : 'Crear cuenta' }}
+    </button>
+    <p class="texto-suave centrado">¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a></p>
+  </form>
+</div>

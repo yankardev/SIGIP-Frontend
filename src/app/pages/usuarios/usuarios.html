@@ -1,0 +1,67 @@
+<div class="cabecera-pagina">
+  <div>
+    <h1>Usuarios</h1>
+    <p class="texto-suave">Cuentas del sistema y sus roles (ADMIN, CLIENTE).</p>
+  </div>
+  <button type="button" class="btn btn-primario" (click)="nuevo()">Nuevo usuario</button>
+</div>
+
+<div class="tarjeta sin-relleno">
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead><tr><th>#</th><th>Usuario</th><th>Nombre</th><th>Correo</th><th>Roles</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+        @for (u of usuarios(); track u.idusuario) {
+          <tr>
+            <td>{{ u.idusuario }}</td>
+            <td><strong>{{ u.nomusuario }}</strong></td>
+            <td>{{ u.nombres }} {{ u.apellidos }}</td>
+            <td>{{ u.email }}</td>
+            <td>
+              @for (r of u.roles; track r) {
+                <span class="badge" [class]="r === 'ADMIN' ? 'badge badge-info' : 'badge badge-neutro'">{{ r }}</span>
+              }
+            </td>
+            <td>@if (u.activo) { <span class="badge badge-ok">Activo</span> } @else { <span class="badge badge-apagado">Inactivo</span> }</td>
+            <td class="num nowrap">
+              <button type="button" class="btn btn-secundario btn-pequeno" (click)="editar(u)">Editar</button>
+              @if (u.nomusuario !== auth.usuario()?.nomusuario) {
+                <button type="button" class="btn btn-peligro-suave btn-pequeno" (click)="eliminar(u)">Eliminar</button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="7" class="vacio">No hay usuarios.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@if (modal()) {
+  <app-modal [titulo]="editandoId ? 'Editar usuario' : 'Nuevo usuario'" (cerrar)="modal.set(false)">
+    <form (ngSubmit)="guardar()" #f="ngForm">
+      <div class="rejilla-2">
+        <label class="campo"><span>Nombres</span><input name="nombres" required [(ngModel)]="form.nombres" /></label>
+        <label class="campo"><span>Apellidos</span><input name="apellidos" required [(ngModel)]="form.apellidos" /></label>
+      </div>
+      <div class="rejilla-2">
+        <label class="campo"><span>Usuario</span><input name="nomusuario" required minlength="4" maxlength="50" [(ngModel)]="form.nomusuario" /></label>
+        <label class="campo"><span>Correo</span><input type="email" name="email" required email [(ngModel)]="form.email" /></label>
+      </div>
+      <label class="campo">
+        <span>Contraseña {{ editandoId ? '(déjala vacía para no cambiarla)' : '' }}</span>
+        <input type="password" name="password" [required]="!editandoId" minlength="8" maxlength="100" [(ngModel)]="form.password" autocomplete="new-password" />
+      </label>
+      <div class="opciones">
+        <label><input type="checkbox" name="admin" [(ngModel)]="form.admin" /> ADMIN</label>
+        <label><input type="checkbox" name="cliente" [(ngModel)]="form.cliente" /> CLIENTE</label>
+        <label><input type="checkbox" name="activo" [(ngModel)]="form.activo" /> Activo</label>
+      </div>
+      <div class="acciones">
+        <button type="button" class="btn btn-secundario" (click)="modal.set(false)">Cancelar</button>
+        <button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar</button>
+      </div>
+    </form>
+  </app-modal>
+}

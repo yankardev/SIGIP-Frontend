@@ -1,0 +1,99 @@
+<div class="cabecera-pagina">
+  <div>
+    <h1>Gestionar catálogo</h1>
+    <p class="texto-suave">Los cambios invalidan la caché Caffeine de catalog-service.</p>
+  </div>
+  @if (pestana() === 'servicios') {
+    <button type="button" class="btn btn-primario" (click)="nuevoServicio()">Nuevo servicio</button>
+  } @else {
+    <button type="button" class="btn btn-primario" (click)="nuevaCategoria()">Nueva categoría</button>
+  }
+</div>
+
+<div class="pestanas">
+  <button type="button" [class.activa]="pestana() === 'servicios'" (click)="pestana.set('servicios')">Servicios ({{ servicios().length }})</button>
+  <button type="button" [class.activa]="pestana() === 'categorias'" (click)="pestana.set('categorias')">Categorías ({{ categorias().length }})</button>
+</div>
+
+<div class="tarjeta sin-relleno">
+  <div class="tabla-contenedor">
+    @if (pestana() === 'servicios') {
+      <table class="tabla">
+        <thead><tr><th>#</th><th>Servicio</th><th>Categoría</th><th class="num">Precio base</th><th>Cotización</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+          @for (s of servicios(); track s.idservicio) {
+            <tr>
+              <td>{{ s.idservicio }}</td>
+              <td>{{ s.nombre }}<div class="texto-suave pequeno">{{ s.descripcion }}</div></td>
+              <td>{{ s.categoria }}</td>
+              <td class="num">{{ s.precioBase | currency: 'PEN' : 'S/' }}</td>
+              <td>{{ s.requiereCotizacion ? 'Sí' : 'No' }}</td>
+              <td>@if (s.activo) { <span class="badge badge-ok">Activo</span> } @else { <span class="badge badge-apagado">Inactivo</span> }</td>
+              <td class="num nowrap">
+                <button type="button" class="btn btn-secundario btn-pequeno" (click)="editarServicio(s)">Editar</button>
+                <button type="button" class="btn btn-peligro-suave btn-pequeno" (click)="eliminarServicio(s)">Eliminar</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="7" class="vacio">No hay servicios.</td></tr>
+          }
+        </tbody>
+      </table>
+    } @else {
+      <table class="tabla">
+        <thead><tr><th>#</th><th>Categoría</th><th>Descripción</th><th></th></tr></thead>
+        <tbody>
+          @for (c of categorias(); track c.idcategoria) {
+            <tr>
+              <td>{{ c.idcategoria }}</td>
+              <td>{{ c.nombre }}</td>
+              <td>{{ c.descripcion || '—' }}</td>
+              <td class="num nowrap">
+                <button type="button" class="btn btn-secundario btn-pequeno" (click)="editarCategoria(c)">Editar</button>
+                <button type="button" class="btn btn-peligro-suave btn-pequeno" (click)="eliminarCategoria(c)">Eliminar</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="vacio">No hay categorías.</td></tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>
+
+@if (modal() === 'servicio') {
+  <app-modal [titulo]="editandoId ? 'Editar servicio' : 'Nuevo servicio'" (cerrar)="modal.set(null)">
+    <form (ngSubmit)="guardarServicio()" #f="ngForm">
+      <label class="campo"><span>Nombre</span><input name="nombre" required maxlength="150" [(ngModel)]="formServicio.nombre" /></label>
+      <label class="campo"><span>Descripción</span><textarea name="descripcion" rows="2" maxlength="500" [(ngModel)]="formServicio.descripcion"></textarea></label>
+      <div class="rejilla-2">
+        <label class="campo"><span>Categoría</span>
+          <select name="idcategoria" required [(ngModel)]="formServicio.idcategoria">
+            @for (c of categorias(); track c.idcategoria) { <option [ngValue]="c.idcategoria">{{ c.nombre }}</option> }
+          </select>
+        </label>
+        <label class="campo"><span>Precio base (S/)</span><input type="number" name="precioBase" min="0" step="0.01" required [(ngModel)]="formServicio.precioBase" /></label>
+      </div>
+      <label class="interruptor"><input type="checkbox" name="requiereCotizacion" [(ngModel)]="formServicio.requiereCotizacion" /> Requiere cotización</label>
+      <label class="interruptor"><input type="checkbox" name="activo" [(ngModel)]="formServicio.activo" /> Visible en el catálogo</label>
+      <div class="acciones">
+        <button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button>
+        <button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar</button>
+      </div>
+    </form>
+  </app-modal>
+}
+
+@if (modal() === 'categoria') {
+  <app-modal [titulo]="editandoId ? 'Editar categoría' : 'Nueva categoría'" (cerrar)="modal.set(null)">
+    <form (ngSubmit)="guardarCategoria()" #f="ngForm">
+      <label class="campo"><span>Nombre</span><input name="nombre" required maxlength="100" [(ngModel)]="formCategoria.nombre" /></label>
+      <label class="campo"><span>Descripción</span><textarea name="descripcion" rows="2" maxlength="300" [(ngModel)]="formCategoria.descripcion"></textarea></label>
+      <div class="acciones">
+        <button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button>
+        <button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar</button>
+      </div>
+    </form>
+  </app-modal>
+}

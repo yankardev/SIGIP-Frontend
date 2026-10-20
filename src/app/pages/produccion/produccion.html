@@ -1,0 +1,105 @@
+<div class="cabecera-pagina">
+  <div>
+    <h1>Producción</h1>
+    <p class="texto-suave">Cola de trabajo por prioridad. Al iniciar o aprobar calidad, el pedido cambia de estado automáticamente.</p>
+  </div>
+  <div class="fila">
+    <select [(ngModel)]="filtro" (ngModelChange)="cargar()" aria-label="Filtrar por estado">
+      <option value="">Todas</option>
+      @for (e of estados; track e) { <option [value]="e">{{ e | etiqueta }}</option> }
+    </select>
+    <button type="button" class="btn btn-primario" (click)="nueva()">Nueva orden</button>
+  </div>
+</div>
+
+<div class="tarjeta sin-relleno">
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Orden</th><th>Pedido</th><th>Trabajo</th><th>Prioridad</th><th>Estado</th>
+          <th>Responsable</th><th class="num">Reprocesos</th><th>Registro</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando()) {
+          <tr><td colspan="9" class="vacio">Cargando…</td></tr>
+        } @else {
+          @for (o of ordenes(); track o.idorden) {
+            <tr>
+              <td>#{{ o.idorden }}</td>
+              <td><a [routerLink]="['/pedidos', o.idpedido]">#{{ o.idpedido }}</a></td>
+              <td>
+                {{ o.descripcionTrabajo }}
+                @if (o.observacion) { <div class="texto-suave pequeno">{{ o.observacion }}</div> }
+              </td>
+              <td><app-estado [valor]="o.prioridad" /></td>
+              <td><app-estado [valor]="o.estado" /></td>
+              <td>{{ o.responsable || '—' }}</td>
+              <td class="num">{{ o.reprocesos }}</td>
+              <td>{{ o.fechaRegistro | date: 'dd/MM HH:mm' }}</td>
+              <td class="num nowrap">
+                @if (o.estado === 'PENDIENTE' || o.estado === 'OBSERVADA') {
+                  <button type="button" class="btn btn-primario btn-pequeno" [disabled]="trabajando()" (click)="iniciar(o)">Iniciar</button>
+                }
+                @if (o.estado === 'EN_PROCESO') {
+                  <button type="button" class="btn btn-primario btn-pequeno" (click)="abrirCalidad(o)">Control de calidad</button>
+                }
+                @if (o.estado !== 'TERMINADA') {
+                  <button type="button" class="btn btn-secundario btn-pequeno" (click)="editar(o)">Editar</button>
+                }
+                <button type="button" class="btn btn-peligro-suave btn-pequeno" (click)="eliminar(o)">Eliminar</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="9" class="vacio">No hay órdenes de producción.</td></tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@if (modal() === 'form') {
+  <app-modal [titulo]="editandoId ? 'Editar orden #' + editandoId : 'Nueva orden de producción'" (cerrar)="modal.set(null)">
+    <form (ngSubmit)="guardar()" #f="ngForm">
+      <div class="rejilla-2">
+        <label class="campo"><span>N.º de pedido</span>
+          <input type="number" name="idpedido" min="1" required [(ngModel)]="form.idpedido" [disabled]="!!editandoId" />
+        </label>
+        <label class="campo"><span>Prioridad</span>
+          <select name="prioridad" [(ngModel)]="form.prioridad">
+            @for (p of prioridades; track p) { <option [value]="p">{{ p | etiqueta }}</option> }
+          </select>
+        </label>
+      </div>
+      <label class="campo"><span>Responsable</span>
+        <input name="responsable" maxlength="100" [(ngModel)]="form.responsable" placeholder="Operario de máquina offset" />
+      </label>
+      <label class="campo"><span>Observación</span>
+        <textarea name="observacion" rows="2" maxlength="500" [(ngModel)]="form.observacion"></textarea>
+      </label>
+      <p class="texto-suave pequeno">El pedido debe tener el pago verificado (estado Confirmado o En diseño).</p>
+      <div class="acciones">
+        <button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button>
+        <button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar</button>
+      </div>
+    </form>
+  </app-modal>
+}
+
+@if (modal() === 'calidad') {
+  <app-modal [titulo]="'Control de calidad · orden #' + calidad.orden?.idorden" (cerrar)="modal.set(null)">
+    <div class="opciones">
+      <label><input type="radio" name="aprobado" [value]="true" [(ngModel)]="calidad.aprobado" /> Aprobado: el trabajo está conforme</label>
+      <label><input type="radio" name="aprobado" [value]="false" [(ngModel)]="calidad.aprobado" /> Observado: necesita reproceso</label>
+    </div>
+    <label class="campo"><span>Observación</span>
+      <textarea name="observacion" rows="2" maxlength="500" [(ngModel)]="calidad.observacion"></textarea>
+    </label>
+    <div class="acciones">
+      <button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button>
+      <button type="button" class="btn btn-primario" [disabled]="trabajando()" (click)="registrarCalidad()">Registrar resultado</button>
+    </div>
+  </app-modal>
+}

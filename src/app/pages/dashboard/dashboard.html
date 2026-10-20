@@ -1,0 +1,65 @@
+<div class="cabecera-pagina">
+  <div>
+    <h1>Dashboard</h1>
+    <p class="texto-suave">
+      Resumen del negocio
+      @if (datos(); as d) { · actualizado {{ d.generadoEn | date: 'dd/MM/yyyy HH:mm:ss' }} }
+    </p>
+  </div>
+  <button type="button" class="btn btn-secundario" (click)="cargar()" [disabled]="cargando()">Actualizar</button>
+</div>
+
+@if (datos(); as d) {
+  @for (aviso of d.avisos; track aviso) {
+    <p class="alerta alerta-aviso">{{ aviso }}</p>
+  }
+
+  <div class="kpis">
+    <div class="tarjeta kpi">
+      <span class="texto-suave">Ventas confirmadas</span>
+      <strong>{{ (d.ventas?.ventasConfirmadas ?? 0) | currency: 'PEN' : 'S/' }}</strong>
+    </div>
+    <div class="tarjeta kpi">
+      <span class="texto-suave">Pedidos totales</span>
+      <strong>{{ d.ventas?.totalPedidos ?? 0 | number }}</strong>
+    </div>
+    <a class="tarjeta kpi enlace" routerLink="/pedidos">
+      <span class="texto-suave">Por atender</span>
+      <strong>{{ d.pedidosPorAtender | number }}</strong>
+    </a>
+    <a class="tarjeta kpi enlace" routerLink="/produccion">
+      <span class="texto-suave">En taller</span>
+      <strong>{{ d.pedidosEnTaller | number }}</strong>
+    </a>
+  </div>
+
+  <div class="rejilla-2 alinear-arriba">
+    <section class="tarjeta">
+      <h2>Pedidos por estado</h2>
+      <div class="barras">
+        @for (b of porEstado(); track b.estado) {
+          <div class="barra-fila">
+            <span class="barra-etiqueta">{{ b.estado | etiqueta }}</span>
+            <span class="barra-pista"><span class="barra" [style.width.%]="b.ancho"></span></span>
+            <span class="barra-valor">{{ b.cantidad }}</span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="tarjeta">
+      <h2>Insumos bajo stock mínimo</h2>
+      @for (i of d.insumosBajoStock; track i.idinsumo) {
+        <div class="item-lista">
+          <div><strong>{{ i.codigo }}</strong> · {{ i.nombre }}</div>
+          <span class="badge badge-peligro">{{ i.stockActual | number: '1.0-3' }} / mín. {{ i.stockMinimo | number: '1.0-3' }} {{ i.unidadMedida }}</span>
+        </div>
+      } @empty {
+        <p class="vacio">Todo el inventario está sobre el mínimo.</p>
+      }
+      <a routerLink="/inventario">Ir a inventario →</a>
+    </section>
+  </div>
+} @else if (cargando()) {
+  <p class="texto-suave">Cargando tablero…</p>
+}

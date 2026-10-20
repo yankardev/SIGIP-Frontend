@@ -1,0 +1,64 @@
+<div class="cabecera-pagina">
+  <div>
+    <h1>Catálogo de servicios</h1>
+    <p class="texto-suave">Elige un servicio de impresión y registra tu pedido.</p>
+  </div>
+  <input class="buscador" type="search" placeholder="Buscar servicio…" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" />
+</div>
+
+<div class="chips">
+  <button type="button" class="chip" [class.chip-activo]="categoriaSeleccionada() === null" (click)="categoriaSeleccionada.set(null)">Todas</button>
+  @for (c of categorias(); track c.idcategoria) {
+    <button type="button" class="chip" [class.chip-activo]="categoriaSeleccionada() === c.idcategoria" (click)="categoriaSeleccionada.set(c.idcategoria)">
+      {{ c.nombre }}
+    </button>
+  }
+</div>
+
+@if (cargando()) {
+  <p class="texto-suave">Cargando catálogo…</p>
+} @else {
+  <div class="rejilla-tarjetas">
+    @for (s of visibles(); track s.idservicio) {
+      <article class="tarjeta servicio">
+        <span class="texto-suave pequeno">{{ s.categoria }}</span>
+        <h3>{{ s.nombre }}</h3>
+        <p class="texto-suave">{{ s.descripcion }}</p>
+        <div class="servicio-pie">
+          <div>
+            <strong class="precio">{{ s.precioBase | currency: 'PEN' : 'S/' }}</strong>
+            <small class="texto-suave"> por unidad</small>
+            @if (s.requiereCotizacion) {
+              <div><span class="badge badge-aviso">Requiere cotización</span></div>
+            }
+          </div>
+          <button type="button" class="btn btn-primario" (click)="abrir(s)">Solicitar</button>
+        </div>
+      </article>
+    } @empty {
+      <p class="vacio">No hay servicios que coincidan con la búsqueda.</p>
+    }
+  </div>
+}
+
+@if (elegido(); as s) {
+  <app-modal [titulo]="'Solicitar: ' + s.nombre" (cerrar)="elegido.set(null)">
+    <form (ngSubmit)="solicitar()">
+      <label class="campo">
+        <span>Cantidad</span>
+        <input type="number" name="cantidad" min="1" max="100000" required [(ngModel)]="cantidad" />
+      </label>
+      <label class="campo">
+        <span>Especificaciones (tamaño, papel, colores, acabado…)</span>
+        <textarea name="especificaciones" rows="3" maxlength="1000" [(ngModel)]="especificaciones"></textarea>
+      </label>
+      <p class="total">Total estimado: <strong>{{ total() | currency: 'PEN' : 'S/' }}</strong></p>
+      <div class="acciones">
+        <button type="button" class="btn btn-secundario" (click)="elegido.set(null)">Cancelar</button>
+        <button class="btn btn-primario" [disabled]="guardando() || !cantidad || cantidad < 1">
+          {{ guardando() ? 'Registrando…' : 'Registrar pedido' }}
+        </button>
+      </div>
+    </form>
+  </app-modal>
+}

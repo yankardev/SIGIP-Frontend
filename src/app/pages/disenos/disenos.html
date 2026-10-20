@@ -1,0 +1,107 @@
+<div class="cabecera-pagina">
+  <div>
+    <h1>Diseños</h1>
+    <p class="texto-suave">
+      @if (auth.esAdmin()) { Publica versiones del arte para que el cliente las apruebe. }
+      @else { Revisa las propuestas de diseño de tus pedidos y apruébalas u obsérvalas. }
+    </p>
+  </div>
+  <div class="fila">
+    <input class="buscador corto" type="number" min="1" placeholder="N.º pedido" [(ngModel)]="filtroPedido" (keyup.enter)="cargar()" aria-label="Filtrar por pedido" />
+    <button type="button" class="btn btn-secundario" (click)="cargar()">Filtrar</button>
+    @if (auth.esAdmin()) {
+      <button type="button" class="btn btn-primario" (click)="nuevo()">Nueva versión</button>
+    }
+  </div>
+</div>
+
+<div class="tarjeta sin-relleno">
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Pedido</th>
+          @if (auth.esAdmin()) { <th>Cliente</th> }
+          <th>Versión</th>
+          <th>Archivo</th>
+          <th>Estado</th>
+          <th>Comentario del cliente</th>
+          <th>Fecha</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando()) {
+          <tr><td colspan="8" class="vacio">Cargando…</td></tr>
+        } @else {
+          @for (d of disenos(); track d.iddiseno) {
+            <tr>
+              <td><a [routerLink]="['/pedidos', d.idpedido]">#{{ d.idpedido }}</a></td>
+              @if (auth.esAdmin()) { <td>{{ d.cliente }}</td> }
+              <td>v{{ d.version }}</td>
+              <td>
+                @if (d.urlArchivo) { <a [href]="d.urlArchivo" target="_blank" rel="noopener">{{ d.nombreArchivo }}</a> }
+                @else { {{ d.nombreArchivo }} }
+                @if (d.descripcion) { <div class="texto-suave pequeno">{{ d.descripcion }}</div> }
+              </td>
+              <td><app-estado [valor]="d.estado" /></td>
+              <td>{{ d.comentarioCliente || '—' }}</td>
+              <td>{{ d.fechaRegistro | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td class="num nowrap">
+                @if (!auth.esAdmin() && d.estado === 'EN_REVISION') {
+                  <button type="button" class="btn btn-primario btn-pequeno" (click)="abrirDecision(d, 'APROBAR')">Aprobar</button>
+                  <button type="button" class="btn btn-secundario btn-pequeno" (click)="abrirDecision(d, 'OBSERVAR')">Observar</button>
+                }
+                @if (auth.esAdmin()) {
+                  <button type="button" class="btn btn-secundario btn-pequeno" (click)="editar(d)">Editar</button>
+                  <button type="button" class="btn btn-peligro-suave btn-pequeno" (click)="eliminar(d)">Eliminar</button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="8" class="vacio">No hay diseños registrados.</td></tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@if (modal() === 'form') {
+  <app-modal [titulo]="editandoId ? 'Editar diseño' : 'Publicar nueva versión'" (cerrar)="modal.set(null)">
+    <form (ngSubmit)="guardar()" #f="ngForm">
+      <label class="campo"><span>N.º de pedido</span>
+        <input type="number" name="idpedido" min="1" required [(ngModel)]="form.idpedido" [disabled]="!!editandoId" />
+      </label>
+      <label class="campo"><span>Nombre del archivo (pdf, png, jpg, ai, psd, svg, cdr)</span>
+        <input name="nombreArchivo" required maxlength="200" placeholder="tarjeta-v1.pdf" [(ngModel)]="form.nombreArchivo" />
+      </label>
+      <label class="campo"><span>URL del archivo (opcional)</span>
+        <input name="urlArchivo" maxlength="500" placeholder="https://drive.google.com/…" [(ngModel)]="form.urlArchivo" />
+      </label>
+      <label class="campo"><span>Descripción</span>
+        <textarea name="descripcion" rows="2" maxlength="500" [(ngModel)]="form.descripcion"></textarea>
+      </label>
+      <p class="texto-suave pequeno">El pedido debe estar confirmado (pago verificado). Cada nueva versión reemplaza a la anterior.</p>
+      <div class="acciones">
+        <button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button>
+        <button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar</button>
+      </div>
+    </form>
+  </app-modal>
+}
+
+@if (modal() === 'decision') {
+  <app-modal [titulo]="decision.tipo === 'APROBAR' ? 'Aprobar diseño' : 'Observar diseño'" (cerrar)="modal.set(null)">
+    <p>Pedido #{{ decision.diseno?.idpedido }} · versión {{ decision.diseno?.version }} · {{ decision.diseno?.nombreArchivo }}</p>
+    <label class="campo"><span>{{ decision.tipo === 'APROBAR' ? 'Comentario (opcional)' : '¿Qué cambios necesitas?' }}</span>
+      <textarea name="comentario" rows="3" maxlength="500" [(ngModel)]="decision.comentario"></textarea>
+    </label>
+    <div class="acciones">
+      <button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button>
+      <button type="button" class="btn btn-primario" [disabled]="trabajando() || (decision.tipo === 'OBSERVAR' && !decision.comentario.trim())" (click)="decidir()">
+        {{ decision.tipo === 'APROBAR' ? 'Aprobar' : 'Enviar observación' }}
+      </button>
+    </div>
+  </app-modal>
+}

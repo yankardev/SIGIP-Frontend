@@ -1,0 +1,56 @@
+<div class="cabecera-pagina">
+  <div>
+    <h1>{{ auth.esAdmin() ? 'Pedidos' : 'Mis pedidos' }}</h1>
+    <p class="texto-suave">Seguimiento del pedido desde el registro hasta la entrega.</p>
+  </div>
+  <div class="fila">
+    @if (auth.esAdmin()) {
+      <select [(ngModel)]="filtro" (ngModelChange)="cargar()" aria-label="Filtrar por estado">
+        <option value="">Todos los estados</option>
+        @for (e of estados; track e) {
+          <option [value]="e">{{ e | etiqueta }}</option>
+        }
+      </select>
+    }
+    <a class="btn btn-primario" routerLink="/catalogo">Nuevo pedido</a>
+  </div>
+</div>
+
+<div class="tarjeta sin-relleno">
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>#</th>
+          @if (auth.esAdmin()) { <th>Cliente</th> }
+          <th>Servicio</th>
+          <th class="num">Cantidad</th>
+          <th class="num">Total</th>
+          <th>Estado</th>
+          <th>Fecha</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (cargando()) {
+          <tr><td colspan="8" class="vacio">Cargando…</td></tr>
+        } @else {
+          @for (p of pedidos(); track p.idpedido) {
+            <tr>
+              <td>{{ p.idpedido }}</td>
+              @if (auth.esAdmin()) { <td>{{ p.cliente }}</td> }
+              <td>{{ p.nombreServicio }}</td>
+              <td class="num">{{ p.cantidad }}</td>
+              <td class="num">{{ p.total | currency: 'PEN' : 'S/' }}</td>
+              <td><app-estado [valor]="p.estado" /></td>
+              <td>{{ p.fechaPedido | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td class="num"><a class="btn btn-secundario btn-pequeno" [routerLink]="['/pedidos', p.idpedido]">Ver</a></td>
+            </tr>
+          } @empty {
+            <tr><td colspan="8" class="vacio">No hay pedidos todavía.</td></tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

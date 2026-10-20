@@ -1,0 +1,70 @@
+<div class="cabecera-pagina">
+  <div>
+    <h1>Notificaciones</h1>
+    <p class="texto-suave">Avisos automáticos de cada cambio en los pedidos, enviados por eventos de RabbitMQ.</p>
+  </div>
+  <div class="fila">
+    <button type="button" class="btn btn-secundario" (click)="cargar()">Actualizar</button>
+    @if (auth.esAdmin()) {
+      <button type="button" class="btn btn-primario" (click)="nueva()">Nuevo aviso</button>
+    }
+  </div>
+</div>
+
+@if (cargando()) {
+  <p class="texto-suave">Cargando…</p>
+} @else {
+  <div class="lista-avisos">
+    @for (n of lista(); track n.idnotificacion) {
+      <article class="tarjeta aviso" [class.no-leido]="n.estado !== 'LEIDA'">
+        <div class="aviso-cabecera">
+          <strong>{{ n.asunto }}</strong>
+          <span class="fila">
+            <span class="texto-suave pequeno">{{ n.canal | etiqueta }}</span>
+            <app-estado [valor]="n.estado" />
+          </span>
+        </div>
+        <p>{{ n.mensaje }}</p>
+        <div class="aviso-pie texto-suave pequeno">
+          <span>
+            {{ n.fecha | date: 'dd/MM/yyyy HH:mm' }}
+            @if (auth.esAdmin()) { · para <strong>{{ n.destinatario }}</strong> }
+            @if (n.idpedido) { · <a [routerLink]="['/pedidos', n.idpedido]">pedido #{{ n.idpedido }}</a> }
+          </span>
+          <span class="fila">
+            @if (n.estado !== 'LEIDA') {
+              <button type="button" class="btn btn-secundario btn-pequeno" (click)="marcarLeida(n)">Marcar como leída</button>
+            }
+            @if (auth.esAdmin()) {
+              <button type="button" class="btn btn-peligro-suave btn-pequeno" (click)="eliminar(n)">Eliminar</button>
+            }
+          </span>
+        </div>
+      </article>
+    } @empty {
+      <p class="vacio tarjeta">No tienes notificaciones.</p>
+    }
+  </div>
+}
+
+@if (modal()) {
+  <app-modal titulo="Nuevo aviso manual" (cerrar)="modal.set(false)">
+    <form (ngSubmit)="crear()" #f="ngForm">
+      <div class="rejilla-2">
+        <label class="campo"><span>Destinatario (usuario)</span><input name="destinatario" required maxlength="150" [(ngModel)]="form.destinatario" /></label>
+        <label class="campo"><span>Canal</span>
+          <select name="canal" [(ngModel)]="form.canal">
+            @for (c of canales; track c) { <option [value]="c">{{ c | etiqueta }}</option> }
+          </select>
+        </label>
+      </div>
+      <label class="campo"><span>Asunto</span><input name="asunto" required maxlength="200" [(ngModel)]="form.asunto" /></label>
+      <label class="campo"><span>Mensaje</span><textarea name="mensaje" rows="3" required maxlength="1000" [(ngModel)]="form.mensaje"></textarea></label>
+      <label class="campo"><span>Pedido (opcional)</span><input type="number" name="idpedido" min="1" [(ngModel)]="form.idpedido" /></label>
+      <div class="acciones">
+        <button type="button" class="btn btn-secundario" (click)="modal.set(false)">Cancelar</button>
+        <button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Enviar</button>
+      </div>
+    </form>
+  </app-modal>
+}

@@ -1,0 +1,171 @@
+@if (pedido(); as p) {
+  <div class="cabecera-pagina">
+    <div>
+      <a class="volver" routerLink="/pedidos">← Pedidos</a>
+      <h1>Pedido #{{ p.idpedido }} <app-estado [valor]="p.estado" /></h1>
+      <p class="texto-suave">Registrado el {{ p.fechaPedido | date: 'dd/MM/yyyy HH:mm' }}@if (auth.esAdmin()) { · cliente <strong>{{ p.cliente }}</strong> }</p>
+    </div>
+    <div class="fila">
+      @if (editable()) {
+        <button type="button" class="btn btn-primario" (click)="abrirPago()">Registrar pago</button>
+        <button type="button" class="btn btn-secundario" (click)="abrirEdicion()">Editar</button>
+        <button type="button" class="btn btn-peligro-suave" (click)="eliminar()" [disabled]="trabajando()">Eliminar</button>
+      }
+      @if (auth.esAdmin() && p.siguientesEstados.length > 0) {
+        <button type="button" class="btn btn-secundario" (click)="abrirCambioEstado()">Cambiar estado</button>
+      }
+      @if (cancelable()) {
+        <button type="button" class="btn btn-peligro-suave" (click)="cancelar()" [disabled]="trabajando()">Cancelar pedido</button>
+      }
+    </div>
+  </div>
+
+  @if (p.estado !== 'CANCELADO') {
+    <ol class="avance">
+      @for (paso of pasos; track paso; let i = $index) {
+        <li [class.hecho]="i < indiceActual()" [class.actual]="i === indiceActual()">
+          <span class="punto">{{ i + 1 }}</span>
+          <span>{{ paso | etiqueta }}</span>
+        </li>
+      }
+    </ol>
+  }
+
+  <div class="rejilla-2 alinear-arriba">
+    <section class="tarjeta">
+      <h2>Detalle</h2>
+      <dl class="datos">
+        <dt>Servicio</dt><dd>{{ p.nombreServicio }}</dd>
+        <dt>Cantidad</dt><dd>{{ p.cantidad }}</dd>
+        <dt>Precio unitario</dt><dd>{{ p.precioUnitario | currency: 'PEN' : 'S/' }}</dd>
+        <dt>Total</dt><dd><strong>{{ p.total | currency: 'PEN' : 'S/' }}</strong></dd>
+        <dt>Especificaciones</dt><dd>{{ p.especificaciones || '—' }}</dd>
+        <dt>Última observación</dt><dd>{{ p.observacion || '—' }}</dd>
+      </dl>
+      @if (auth.esAdmin() && (p.estado === 'CONFIRMADO' || p.estado === 'EN_DISENO')) {
+        <div class="acciones">
+          <a class="btn btn-secundario" routerLink="/disenos" [queryParams]="{ pedido: p.idpedido }">Subir diseño</a>
+          <a class="btn btn-primario" routerLink="/produccion" [queryParams]="{ pedido: p.idpedido }">Crear orden de producción</a>
+        </div>
+      }
+    </section>
+
+    <section class="tarjeta">
+      <h2>Pagos</h2>
+      @for (pg of pagos(); track pg.idpago) {
+        <div class="item-lista">
+          <div>
+            <strong>{{ pg.monto | currency: 'PEN' : 'S/' }}</strong> · {{ pg.metodo | etiqueta }} · op. {{ pg.numeroOperacion }}
+            <div class="texto-suave pequeno">
+              {{ pg.fechaRegistro | date: 'dd/MM/yyyy HH:mm' }}
+              @if (pg.verificadoPor) { · revisado por {{ pg.verificadoPor }} }
+              @if (pg.observacion) { · {{ pg.observacion }} }
+            </div>
+          </div>
+          <div class="fila">
+            <app-estado [valor]="pg.estado" />
+            @if (auth.esAdmin() && pg.estado === 'PENDIENTE') {
+              <button type="button" class="btn btn-primario btn-pequeno" (click)="abrirVerificacion(pg)">Verificar</button>
+            }
+          </div>
+        </div>
+      } @empty {
+        <p class="vacio">Aún no hay pagos registrados.</p>
+      }
+
+      <h2 class="mt">Diseños</h2>
+      @for (d of listaDisenos(); track d.iddiseno) {
+        <div class="item-lista">
+          <div>
+            <strong>v{{ d.version }}</strong> · {{ d.nombreArchivo }}
+            @if (d.comentarioCliente) { <div class="texto-suave pequeno">“{{ d.comentarioCliente }}”</div> }
+          </div>
+          <app-estado [valor]="d.estado" />
+        </div>
+      } @empty {
+        <p class="vacio">Sin diseños para este pedido.</p>
+      }
+      @if (listaDisenos().length > 0) {
+        <a routerLink="/disenos" [queryParams]="{ pedido: p.idpedido }">Ir a diseños →</a>
+      }
+    </section>
+  </div>
+
+  @switch (modal()) {
+    @case ('pago') {
+      <app-modal titulo="Registrar pago" (cerrar)="modal.set(null)">
+        <form (ngSubmit)="registrarPago()" #f="ngForm">
+          <div class="rejilla-2">
+            <label class="campo"><span>Monto (S/)</span>
+              <input type="number" name="monto" min="0.01" step="0.01" required [(ngModel)]="pago.monto" />
+            </label>
+            <label class="campo"><span>Método</span>
+              <select name="metodo" [(ngModel)]="pago.metodo">
+                @for (m of metodos; track m) { <option [value]="m">{{ m | etiqueta }}</option> }
+              </select>
+            </label>
+          </div>
+          <label class="campo"><span>N.º de operación</span>
+            <input name="numeroOperacion" required maxlength="50" [(ngModel)]="pago.numeroOperacion" placeholder="Ej. 00012345" />
+          </label>
+          <div class="acciones">
+            <button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button>
+            <button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Registrar pago</button>
+          </div>
+        </form>
+      </app-modal>
+    }
+    @case ('editar') {
+      <app-modal titulo="Editar pedido" (cerrar)="modal.set(null)">
+        <form (ngSubmit)="guardarEdicion()" #f="ngForm">
+          <label class="campo"><span>Cantidad</span>
+            <input type="number" name="cantidad" min="1" max="100000" required [(ngModel)]="edicion.cantidad" />
+          </label>
+          <label class="campo"><span>Especificaciones</span>
+            <textarea name="especificaciones" rows="3" maxlength="1000" [(ngModel)]="edicion.especificaciones"></textarea>
+          </label>
+          <div class="acciones">
+            <button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button>
+            <button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar</button>
+          </div>
+        </form>
+      </app-modal>
+    }
+    @case ('estado') {
+      <app-modal titulo="Cambiar estado del pedido" (cerrar)="modal.set(null)">
+        <form (ngSubmit)="cambiarEstado()">
+          <label class="campo"><span>Nuevo estado</span>
+            <select name="estado" required [(ngModel)]="cambio.estado">
+              @for (e of p.siguientesEstados; track e) { <option [value]="e">{{ e | etiqueta }}</option> }
+            </select>
+          </label>
+          <label class="campo"><span>Observación</span>
+            <textarea name="observacion" rows="2" maxlength="500" [(ngModel)]="cambio.observacion"></textarea>
+          </label>
+          <p class="texto-suave pequeno">Solo se muestran las transiciones permitidas por el backend (patrón State).</p>
+          <div class="acciones">
+            <button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button>
+            <button class="btn btn-primario" [disabled]="trabajando() || !cambio.estado">Aplicar</button>
+          </div>
+        </form>
+      </app-modal>
+    }
+    @case ('verificar') {
+      <app-modal titulo="Verificar pago" (cerrar)="modal.set(null)">
+        <p>
+          {{ verificacion.pago?.monto | currency: 'PEN' : 'S/' }} por {{ verificacion.pago?.metodo | etiqueta }},
+          operación <strong>{{ verificacion.pago?.numeroOperacion }}</strong>.
+        </p>
+        <label class="campo"><span>Observación</span>
+          <textarea name="observacion" rows="2" maxlength="300" [(ngModel)]="verificacion.observacion"></textarea>
+        </label>
+        <div class="acciones">
+          <button type="button" class="btn btn-peligro-suave" [disabled]="trabajando()" (click)="verificar(false)">Rechazar</button>
+          <button type="button" class="btn btn-primario" [disabled]="trabajando()" (click)="verificar(true)">Aprobar</button>
+        </div>
+      </app-modal>
+    }
+  }
+} @else {
+  <p class="texto-suave">Cargando pedido…</p>
+}
