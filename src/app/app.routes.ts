@@ -12,7 +12,6 @@ export const routes: Routes = [
     component: Shell,
     canActivate: [authGuard],
     children: [
-      // El administrador entra al tablero; el cliente, al catálogo.
       { path: 'inicio', redirectTo: () => (inject(AuthService).esAdmin() ? '/dashboard' : '/catalogo') },
       { path: 'catalogo', loadComponent: () => import('./pages/catalogo/catalogo').then((m) => m.Catalogo) },
       { path: 'pedidos', loadComponent: () => import('./pages/pedidos/pedidos').then((m) => m.Pedidos) },
@@ -24,6 +23,7 @@ export const routes: Routes = [
         canActivate: [adminGuard],
         children: [
           { path: 'dashboard', loadComponent: () => import('./pages/dashboard/dashboard').then((m) => m.Dashboard) },
+          { path: 'reportes', loadComponent: () => import('./pages/reportes/reportes').then((m) => m.Reportes) },
           { path: 'admin/catalogo', loadComponent: () => import('./pages/admin-catalogo/admin-catalogo').then((m) => m.AdminCatalogo) },
           { path: 'produccion', loadComponent: () => import('./pages/produccion/produccion').then((m) => m.Produccion) },
           { path: 'inventario', loadComponent: () => import('./pages/inventario/inventario').then((m) => m.Inventario) },
