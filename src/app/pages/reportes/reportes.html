@@ -1,0 +1,75 @@
+<div class="cabecera-pagina">
+  <div>
+    <h1>Reportes operativos</h1>
+    <p class="texto-suave">Resumen consolidado de ventas, pedidos y alertas de inventario.</p>
+    @if (datos(); as d) {
+      <p class="texto-suave">Última actualización: {{ d.generadoEn | date: 'dd/MM/yyyy HH:mm:ss' }}</p>
+    }
+  </div>
+  <button type="button" class="btn btn-secundario" (click)="cargar()" [disabled]="cargando()">Actualizar datos</button>
+</div>
+
+@if (datos(); as d) {
+  @for (aviso of d.avisos; track aviso) {
+    <p class="alerta alerta-aviso">{{ aviso }}</p>
+  }
+
+  <div class="kpis">
+    <div class="tarjeta kpi">
+      <span class="texto-suave">Ventas confirmadas</span>
+      <strong>{{ (d.ventas?.ventasConfirmadas ?? 0) | currency: 'PEN' : 'S/' }}</strong>
+    </div>
+    <div class="tarjeta kpi">
+      <span class="texto-suave">Pedidos registrados</span>
+      <strong>{{ d.ventas?.totalPedidos ?? 0 | number }}</strong>
+    </div>
+    <a class="tarjeta kpi enlace" routerLink="/pedidos">
+      <span class="texto-suave">Pedidos por atender</span>
+      <strong>{{ d.pedidosPorAtender | number }}</strong>
+    </a>
+    <a class="tarjeta kpi enlace" routerLink="/produccion">
+      <span class="texto-suave">Pedidos en taller</span>
+      <strong>{{ d.pedidosEnTaller | number }}</strong>
+    </a>
+  </div>
+
+  <div class="rejilla-2 alinear-arriba">
+    <section class="tarjeta">
+      <h2>Pedidos por estado</h2>
+      @if (d.ventas?.pedidosPorEstado; as estados) {
+        @for (item of (estados | keyvalue); track item.key) {
+          <div class="barra-fila">
+            <span class="barra-etiqueta">{{ item.key | etiqueta }}</span>
+            <span class="barra-pista"><span class="barra" [style.width.%]="(item.value / (d.ventas?.totalPedidos || 1)) * 100"></span></span>
+            <span class="barra-valor">{{ item.value }}</span>
+          </div>
+        } @empty {
+          <p class="vacio">Todavía no hay pedidos registrados.</p>
+        }
+      } @else {
+        <p class="vacio">El servicio de ventas no devolvió datos.</p>
+      }
+    </section>
+
+    <section class="tarjeta">
+      <h2>Insumos bajo stock mínimo</h2>
+      @for (insumo of d.insumosBajoStock; track insumo.idinsumo) {
+        <div class="item-lista">
+          <div><strong>{{ insumo.codigo }}</strong> · {{ insumo.nombre}</div>
+          <span class="badge badge-peligro">{{ insumo.stockActual | number: '1.0-3' }} / mín. {{ insumo.stockMinimo | number: '1.0-3' }} {{ insumo.unidadMedida }}</span>
+        </div>
+      } @empty {
+        <p class="vacio">No hay insumos por debajo del stock mínimo, o el servicio no informó alertas.</p>
+      }
+      <a routerLink="/inventario">Revisar inventario →</a>
+    </section>
+  </div>
+} @else if (cargando()) {
+  <p class="texto-suave">Cargando reportes desde report-service…</p>
+} @else {
+  <section class="tarjeta">
+    <h2>No se pudieron cargar los reportes</h2>
+    <p class="texto-suave">Comprueba que el Gateway, report-service, sales-service e inventory-service estén disponibles y registrados en Eureka.</p>
+    <button type="button" class="btn btn-primario" (click)="cargar()">Volver a intentar</button>
+  </section>
+}
