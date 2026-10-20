@@ -1,5 +1,6 @@
-// Desarrollo con `ng serve`: el navegador llama directo al API Gateway (CORS habilitado para :4200).
+// Desarrollo con ng serve: el navegador llama al API Gateway en el puerto 9002.
+// El Gateway debe permitir CORS para http://localhost:4200.
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8090',
+  apiUrl: 'http://localhost:9002',
 };
