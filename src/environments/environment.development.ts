@@ -1,6 +1,6 @@
-// Desarrollo con ng serve: el navegador llama al API Gateway en el puerto 9002.
-// El Gateway debe permitir CORS para http://localhost:4200.
+// En desarrollo, Angular reenvía /api al Gateway local mediante proxy.conf.json.
+// Esto evita depender de CORS en el navegador y mantiene el mismo prefijo de API.
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:9002',
+  apiUrl: '/api',
 };
