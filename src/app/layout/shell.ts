@@ -18,7 +18,8 @@ const MENU: Opcion[] = [
   { ruta: '/produccion', texto: 'Producción', icono: '⚙', soloAdmin: true },
   { ruta: '/inventario', texto: 'Inventario', icono: '▤', soloAdmin: true },
   { ruta: '/admin/catalogo', texto: 'Gestionar catálogo', icono: '✚', soloAdmin: true },
-  { ruta: '/usuarios', texto: 'Usuarios', icono: '☺', soloAdmin: true },
+  { ruta: '/usuarios', texto: 'Usuarios y roles', icono: '☺', soloAdmin: true },
+  { ruta: '/reportes', texto: 'Reportes', icono: '▤', soloAdmin: true },
   { ruta: '/notificaciones', texto: 'Notificaciones', icono: '✉' },
 ];
 

@@ -10,8 +10,9 @@ COPY . .
 RUN npm run build
 
 FROM nginx:1.27-alpine
-# URL interna del gateway (en docker-compose es el nombre del servicio). En la nube se cambia por variable.
-ENV API_GATEWAY_URL=http://api-gateway:8090
+# Puerto interno definido en SIGIP-Api-Gateway (server.port=${PORT:9002}).
+# En Docker Compose, API_GATEWAY_URL debe apuntar al nombre del servicio y al puerto 9002.
+ENV API_GATEWAY_URL=http://api-gateway:9002
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
 EXPOSE 80
