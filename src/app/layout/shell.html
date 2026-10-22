@@ -2,46 +2,77 @@
   <aside class="sidebar admin-sidebar">
     <a class="marca admin-marca" routerLink="/dashboard">
       <span class="marca-logo">S</span>
-      <span>SIGIP<small>Sistema de Gestión<br>de Impresión y Pedidos</small></span>
+      <span class="marca-texto">
+        <strong>SIGIP</strong>
+        <small>Sistema de Gestión<br />de Impresión y Pedidos</small>
+      </span>
     </a>
 
-    <div class="admin-seccion">GESTIÓN INTERNA</div>
-    <nav>
-      @for (o of opciones; track o.ruta) {
-        <a [routerLink]="o.ruta" routerLinkActive="activo" (click)="menuAbierto.set(false)">
-          <span class="icono" aria-hidden="true">{{ o.icono }}</span>{{ o.texto }}
-          @if (o.ruta === '/notificaciones' && notificaciones.noLeidas() > 0) {
-            <span class="contador-menu">{{ notificaciones.noLeidas() }}</span>
-          }
-        </a>
+    <div class="sidebar-menu">
+      @for (grupo of grupos; track grupo.id) {
+        @if (opcionesGrupo(grupo.id).length > 0) {
+          <section class="menu-grupo">
+            <div class="menu-grupo-titulo">{{ grupo.texto }}</div>
+            <nav>
+              @for (o of opcionesGrupo(grupo.id); track o.ruta) {
+                <a [routerLink]="o.ruta" routerLinkActive="activo" (click)="menuAbierto.set(false)">
+                  <span class="icono" aria-hidden="true">{{ o.icono }}</span>
+                  <span class="menu-texto">{{ o.texto }}</span>
+                  @if (o.ruta === '/notificaciones' && notificaciones.noLeidas() > 0) {
+                    <span class="contador-menu">{{ notificaciones.noLeidas() }}</span>
+                  }
+                </a>
+              }
+            </nav>
+          </section>
+        }
       }
-    </nav>
+    </div>
 
     <div class="admin-pie">
-      <span>Uso exclusivo del personal</span>
-      <small>Ventas · Operaciones · Administración</small>
+      <span class="estado-dot"></span>
+      <div>
+        <strong>Sistema interno</strong>
+        <small>Uso exclusivo del personal autorizado</small>
+      </div>
     </div>
   </aside>
 
   <div class="principal">
     <header class="topbar admin-topbar">
       <button type="button" class="btn-icono hamburguesa" aria-label="Menú" (click)="menuAbierto.set(!menuAbierto())">☰</button>
-      <div class="busqueda-global"><span>⌕</span><input aria-label="Buscar en SIGIP" placeholder="Buscar en el sistema..." /></div>
+
+      <div class="busqueda-global">
+        <span aria-hidden="true">⌕</span>
+        <input aria-label="Buscar en SIGIP" placeholder="Buscar en el sistema..." />
+      </div>
+
       <span class="espaciador"></span>
+
       <a class="campana" routerLink="/notificaciones" aria-label="Notificaciones">
         ♧
-        @if (notificaciones.noLeidas() > 0) { <span class="contador">{{ notificaciones.noLeidas() }}</span> }
+        @if (notificaciones.noLeidas() > 0) {
+          <span class="contador">{{ notificaciones.noLeidas() }}</span>
+        }
       </a>
+
       @if (auth.usuario(); as u) {
         <div class="perfil perfil-interno">
           <span class="avatar-interno">{{ u.nombres.charAt(0) }}{{ u.apellidos.charAt(0) }}</span>
-          <span><strong>{{ u.nombres }} {{ u.apellidos }}</strong><small>{{ rolVisible }}</small></span>
+          <span class="perfil-datos">
+            <strong>{{ u.nombres }} {{ u.apellidos }}</strong>
+            <small>{{ rolVisible }}</small>
+          </span>
         </div>
       }
+
       <button type="button" class="btn btn-secundario salir-interno" (click)="auth.logout()">Salir</button>
     </header>
 
-    <main class="contenido admin-contenido"><router-outlet /></main>
+    <main class="contenido admin-contenido">
+      <router-outlet />
+    </main>
   </div>
+
   <div class="velo" (click)="menuAbierto.set(false)"></div>
 </div>
