@@ -1,28 +1,63 @@
 <div class="cabecera-pagina catalogo-cabecera">
-  <div><span class="seccion-kicker">GESTIÓN COMERCIAL</span><h1>Catálogo de servicios</h1><p class="texto-suave">Consulta los servicios y precios registrados por la empresa para utilizarlos en nuevos pedidos.</p></div>
+  <div>
+    <span class="seccion-kicker">ETAPA 1 · GESTIÓN COMERCIAL</span>
+    <h1>Catálogo de servicios</h1>
+    <p class="texto-suave">Selecciona el servicio solicitado para iniciar el registro de un nuevo pedido.</p>
+  </div>
   <input class="buscador" type="search" placeholder="Buscar servicio..." [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" />
 </div>
 
-<div class="chips chips-compras"><button type="button" class="chip" [class.chip-activo]="categoriaSeleccionada() === null" (click)="categoriaSeleccionada.set(null)">Todos</button>
-  @for (c of categorias(); track c.idcategoria) { <button type="button" class="chip" [class.chip-activo]="categoriaSeleccionada() === c.idcategoria" (click)="categoriaSeleccionada.set(c.idcategoria)">{{ c.nombre }}</button> }
+<section class="modulo-guia tarjeta modulo-guia-catalogo">
+  <div class="modulo-guia-titulo"><span>1</span><div><strong>Inicio del proceso</strong><small>Ventas identifica la necesidad del cliente y selecciona el servicio que se utilizará en el pedido.</small></div></div>
+  <div class="guia-lineal"><span>Cliente / solicitud</span><i>→</i><span>Servicio y precio</span><i>→</i><span>Cantidad y especificaciones</span><i>→</i><span>Pedido registrado</span></div>
+</section>
+
+<div class="catalogo-toolbar-interno">
+  <div class="chips chips-compras">
+    <button type="button" class="chip" [class.chip-activo]="categoriaSeleccionada() === null" (click)="categoriaSeleccionada.set(null)">Todos</button>
+    @for (c of categorias(); track c.idcategoria) {
+      <button type="button" class="chip" [class.chip-activo]="categoriaSeleccionada() === c.idcategoria" (click)="categoriaSeleccionada.set(c.idcategoria)">{{ c.nombre }}</button>
+    }
+  </div>
+  <small class="texto-suave">El precio base proviene del catálogo registrado en SIGIP.</small>
 </div>
 
-@if (cargando()) { <p class="texto-suave">Cargando catálogo…</p> } @else {
+@if (cargando()) {
+  <p class="texto-suave">Cargando catálogo…</p>
+} @else {
   <div class="rejilla-tarjetas catalogo-interno">
     @for (s of visibles(); track s.idservicio) {
-      <article class="tarjeta servicio servicio-interno"><div class="servicio-imagen"><span>▧</span><small>{{ s.categoria }}</small></div><span class="texto-suave pequeno">{{ s.categoria }}</span><h3>{{ s.nombre }}</h3><p class="texto-suave">{{ s.descripcion }}</p>
-        <div class="servicio-pie"><div><small class="texto-suave">Precio base</small><div><strong class="precio">{{ s.precioBase | currency: 'PEN' : 'S/' }}</strong><small class="texto-suave"> / unidad</small></div>@if (s.requiereCotizacion) { <div><span class="badge badge-aviso">Requiere cotización</span></div> }</div><button type="button" class="btn btn-primario" (click)="abrir(s)">Usar en pedido</button></div>
+      <article class="tarjeta servicio servicio-interno">
+        <div class="servicio-imagen"><span>▧</span><small>{{ s.categoria }}</small></div>
+        <span class="texto-suave pequeno">{{ s.categoria }}</span>
+        <h3>{{ s.nombre }}</h3>
+        <p class="texto-suave">{{ s.descripcion }}</p>
+        <div class="servicio-pie">
+          <div>
+            <small class="texto-suave">Precio base</small>
+            <div><strong class="precio">{{ s.precioBase | currency: 'PEN' : 'S/' }}</strong><small class="texto-suave"> / unidad</small></div>
+            @if (s.requiereCotizacion) { <div><span class="badge badge-aviso">Requiere cotización</span></div> }
+          </div>
+          <button type="button" class="btn btn-primario" (click)="abrir(s)">Crear pedido →</button>
+        </div>
       </article>
-    } @empty { <p class="vacio">No hay servicios que coincidan con la búsqueda.</p> }
+    } @empty {
+      <p class="vacio">No hay servicios que coincidan con la búsqueda.</p>
+    }
   </div>
 }
 
 @if (elegido(); as s) {
-  <app-modal [titulo]="'Nuevo pedido: ' + s.nombre" (cerrar)="elegido.set(null)"><form (ngSubmit)="solicitar()">
-    <p class="modal-resumen">Registra las especificaciones del trabajo para <strong>{{ s.nombre }}</strong>.</p>
-    <label class="campo"><span>Cantidad</span><input type="number" name="cantidad" min="1" max="100000" required [(ngModel)]="cantidad" /></label>
-    <label class="campo"><span>Especificaciones del trabajo</span><textarea name="especificaciones" rows="3" maxlength="1000" [(ngModel)]="especificaciones"></textarea></label>
-    <p class="total">Total estimado: <strong>{{ total() | currency: 'PEN' : 'S/' }}</strong></p>
-    <div class="acciones"><button type="button" class="btn btn-secundario" (click)="elegido.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="guardando() || !cantidad || cantidad < 1">{{ guardando() ? 'Registrando…' : 'Registrar pedido' }}</button></div>
-  </form></app-modal>
+  <app-modal [titulo]="'Registrar pedido · ' + s.nombre" (cerrar)="elegido.set(null)">
+    <form (ngSubmit)="solicitar()">
+      <div class="resumen-servicio-modal">
+        <span>Servicio</span><strong>{{ s.nombre }}</strong><small>{{ s.categoria }} · {{ s.precioBase | currency: 'PEN' : 'S/' }} por unidad</small>
+      </div>
+      <label class="campo"><span>Cantidad</span><input type="number" name="cantidad" min="1" max="100000" required [(ngModel)]="cantidad" /></label>
+      <label class="campo"><span>Especificaciones del trabajo</span><textarea name="especificaciones" rows="3" maxlength="1000" [(ngModel)]="especificaciones" placeholder="Medidas, colores, material, acabado, fecha requerida..."></textarea></label>
+      <div class="total-pedido-modal"><span>Total estimado</span><strong>{{ total() | currency: 'PEN' : 'S/' }}</strong></div>
+      <p class="alerta alerta-flujo">Después de registrar el pedido, continúa con el registro y verificación del pago desde el detalle del pedido.</p>
+      <div class="acciones"><button type="button" class="btn btn-secundario" (click)="elegido.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="guardando() || !cantidad || cantidad < 1">{{ guardando() ? 'Registrando…' : 'Registrar y continuar →' }}</button></div>
+    </form>
+  </app-modal>
 }
