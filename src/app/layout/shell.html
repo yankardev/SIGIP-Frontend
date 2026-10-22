@@ -4,7 +4,7 @@
       <span class="marca-logo">S</span>
       <span class="marca-texto">
         <strong>SIGIP</strong>
-        <small>Sistema de Gestión<br />de Impresión y Pedidos</small>
+        <small>Sistema Integral de Gestión<br />de Impresión y Pedidos</small>
       </span>
     </a>
 
@@ -29,11 +29,11 @@
       }
     </div>
 
-    <div class="admin-pie">
+    <div class="admin-pie admin-pie-flujo">
       <span class="estado-dot"></span>
       <div>
-        <strong>Sistema interno</strong>
-        <small>Uso exclusivo del personal autorizado</small>
+        <strong>Flujo interno SIGIP</strong>
+        <small>Ventas → Diseño → Producción → Inventario → Entrega</small>
       </div>
     </div>
   </aside>
@@ -51,27 +51,20 @@
 
       <a class="campana" routerLink="/notificaciones" aria-label="Notificaciones">
         ♧
-        @if (notificaciones.noLeidas() > 0) {
-          <span class="contador">{{ notificaciones.noLeidas() }}</span>
-        }
+        @if (notificaciones.noLeidas() > 0) { <span class="contador">{{ notificaciones.noLeidas() }}</span> }
       </a>
 
       @if (auth.usuario(); as u) {
         <div class="perfil perfil-interno">
           <span class="avatar-interno">{{ u.nombres.charAt(0) }}{{ u.apellidos.charAt(0) }}</span>
-          <span class="perfil-datos">
-            <strong>{{ u.nombres }} {{ u.apellidos }}</strong>
-            <small>{{ rolVisible }}</small>
-          </span>
+          <span class="perfil-datos"><strong>{{ u.nombres }} {{ u.apellidos }}</strong><small>{{ rolVisible }}</small></span>
         </div>
       }
 
       <button type="button" class="btn btn-secundario salir-interno" (click)="auth.logout()">Salir</button>
     </header>
 
-    <main class="contenido admin-contenido">
-      <router-outlet />
-    </main>
+    <main class="contenido admin-contenido"><router-outlet /></main>
   </div>
 
   <div class="velo" (click)="menuAbierto.set(false)"></div>
