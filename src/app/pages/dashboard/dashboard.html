@@ -1,23 +1,137 @@
 <div class="cabecera-pagina dashboard-cabecera">
-  <div><span class="seccion-kicker">RESUMEN DE GESTIÓN</span><h1>Dashboard - Área Comercial</h1><p class="texto-suave">Resumen de la gestión de clientes, pedidos y operación interna.</p></div>
+  <div>
+    <span class="seccion-kicker">CONTROL GENERAL DEL PROCESO</span>
+    <h1>Dashboard SIGIP</h1>
+    <p class="texto-suave">Supervisa el recorrido de cada pedido desde su registro comercial hasta la entrega.</p>
+  </div>
   <button type="button" class="btn btn-secundario" (click)="cargar()" [disabled]="cargando()">↻ Actualizar</button>
 </div>
 
+<section class="flujo-principal tarjeta">
+  <div class="flujo-principal-cabecera">
+    <div>
+      <span class="seccion-kicker">FLUJO INTERNO DE TRABAJO</span>
+      <h2>¿Cómo avanza un pedido dentro de SIGIP?</h2>
+      <p class="texto-suave">Cada área continúa el trabajo de la anterior. No se debe saltar una etapa sin completar sus validaciones.</p>
+    </div>
+    <a class="btn btn-primario" routerLink="/pedidos">Ver pedidos</a>
+  </div>
+
+  <div class="flujo-etapas">
+    <a class="flujo-etapa etapa-comercial" routerLink="/catalogo">
+      <span class="flujo-numero">1</span>
+      <span class="flujo-icono">▣</span>
+      <strong>Cliente y servicio</strong>
+      <small>Ventas identifica la solicitud y selecciona el servicio.</small>
+    </a>
+    <span class="flujo-flecha">→</span>
+    <a class="flujo-etapa etapa-comercial" routerLink="/pedidos">
+      <span class="flujo-numero">2</span>
+      <span class="flujo-icono">≡</span>
+      <strong>Pedido y pago</strong>
+      <small>Se registra el pedido y se controla el pago.</small>
+    </a>
+    <span class="flujo-flecha">→</span>
+    <a class="flujo-etapa etapa-diseno" routerLink="/disenos">
+      <span class="flujo-numero">3</span>
+      <span class="flujo-icono">✎</span>
+      <strong>Diseño</strong>
+      <small>Se gestionan versiones y la validación del arte.</small>
+    </a>
+    <span class="flujo-flecha">→</span>
+    <a class="flujo-etapa etapa-produccion" routerLink="/produccion">
+      <span class="flujo-numero">4</span>
+      <span class="flujo-icono">⚙</span>
+      <strong>Producción</strong>
+      <small>El trabajo ingresa al taller y pasa control de calidad.</small>
+    </a>
+    <span class="flujo-flecha">→</span>
+    <a class="flujo-etapa etapa-inventario" routerLink="/inventario">
+      <span class="flujo-numero">5</span>
+      <span class="flujo-icono">▤</span>
+      <strong>Inventario</strong>
+      <small>Se registran los insumos utilizados y sus movimientos.</small>
+    </a>
+    <span class="flujo-flecha">→</span>
+    <a class="flujo-etapa etapa-entrega" routerLink="/pedidos">
+      <span class="flujo-numero">6</span>
+      <span class="flujo-icono">✓</span>
+      <strong>Entrega</strong>
+      <small>El pedido terminado se registra como entregado.</small>
+    </a>
+  </div>
+</section>
+
 @if (datos(); as d) {
-  @for (aviso of d.avisos; track aviso) { <p class="alerta alerta-aviso">{{ aviso }}</p> }
+  @for (aviso of d.avisos; track aviso) {
+    <p class="alerta alerta-aviso">{{ aviso }}</p>
+  }
+
   <div class="kpis kpis-internos">
-    <a class="tarjeta kpi kpi-azul" routerLink="/pedidos"><span class="kpi-icono">▣</span><span class="texto-suave">Pedidos totales</span><strong>{{ d.ventas?.totalPedidos ?? 0 | number }}</strong><small>Registrados en SIGIP</small></a>
-    <div class="tarjeta kpi kpi-verde"><span class="kpi-icono">S/</span><span class="texto-suave">Ventas confirmadas</span><strong>{{ (d.ventas?.ventasConfirmadas ?? 0) | currency: 'PEN' : 'S/' }}</strong><small>Ingresos confirmados</small></div>
-    <a class="tarjeta kpi kpi-naranja" routerLink="/pedidos"><span class="kpi-icono">◎</span><span class="texto-suave">Pedidos por atender</span><strong>{{ d.pedidosPorAtender | number }}</strong><small>Requieren seguimiento</small></a>
-    <a class="tarjeta kpi kpi-morado" routerLink="/produccion"><span class="kpi-icono">⚙</span><span class="texto-suave">En producción</span><strong>{{ d.pedidosEnTaller | number }}</strong><small>Trabajos en taller</small></a>
+    <a class="tarjeta kpi kpi-azul" routerLink="/pedidos">
+      <span class="kpi-icono">▣</span>
+      <span class="texto-suave">Pedidos registrados</span>
+      <strong>{{ d.ventas?.totalPedidos ?? 0 | number }}</strong>
+      <small>Total gestionado en SIGIP</small>
+    </a>
+    <div class="tarjeta kpi kpi-verde">
+      <span class="kpi-icono">S/</span>
+      <span class="texto-suave">Ventas confirmadas</span>
+      <strong>{{ (d.ventas?.ventasConfirmadas ?? 0) | currency: 'PEN' : 'S/' }}</strong>
+      <small>Pedidos con pago validado</small>
+    </div>
+    <a class="tarjeta kpi kpi-naranja" routerLink="/pedidos">
+      <span class="kpi-icono">!</span>
+      <span class="texto-suave">Pedidos por atender</span>
+      <strong>{{ d.pedidosPorAtender | number }}</strong>
+      <small>Requieren una acción del personal</small>
+    </a>
+    <a class="tarjeta kpi kpi-morado" routerLink="/produccion">
+      <span class="kpi-icono">⚙</span>
+      <span class="texto-suave">En producción</span>
+      <strong>{{ d.pedidosEnTaller | number }}</strong>
+      <small>Trabajos actualmente en taller</small>
+    </a>
   </div>
 
   <div class="rejilla-2 alinear-arriba dashboard-paneles">
-    <section class="tarjeta"><div class="panel-titulo"><div><h2>Pedidos por estado</h2><p class="texto-suave">Seguimiento del flujo comercial y operativo</p></div><a routerLink="/pedidos">Ver todos →</a></div>
-      <div class="barras">@for (b of porEstado(); track b.estado) { <div class="barra-fila"><span class="barra-etiqueta">{{ b.estado | etiqueta }}</span><span class="barra-pista"><span class="barra" [style.width.%]="b.ancho"></span></span><span class="barra-valor">{{ b.cantidad }}</span></div> }</div>
+    <section class="tarjeta">
+      <div class="panel-titulo">
+        <div>
+          <h2>Pedidos por estado</h2>
+          <p class="texto-suave">Ubicación de los pedidos dentro del flujo interno.</p>
+        </div>
+        <a routerLink="/pedidos">Ver todos →</a>
+      </div>
+      <div class="barras">
+        @for (b of porEstado(); track b.estado) {
+          <div class="barra-fila">
+            <span class="barra-etiqueta">{{ b.estado | etiqueta }}</span>
+            <span class="barra-pista"><span class="barra" [style.width.%]="b.ancho"></span></span>
+            <span class="barra-valor">{{ b.cantidad }}</span>
+          </div>
+        }
+      </div>
     </section>
-    <section class="tarjeta"><div class="panel-titulo"><div><h2>Alertas de inventario</h2><p class="texto-suave">Insumos por debajo del stock mínimo</p></div><a routerLink="/inventario">Ver inventario →</a></div>
-      @for (i of d.insumosBajoStock; track i.idinsumo) { <div class="item-lista"><div><strong>{{ i.codigo }}</strong> · {{ i.nombre }}</div><span class="badge badge-peligro">{{ i.stockActual | number: '1.0-3' }} / mín. {{ i.stockMinimo | number: '1.0-3' }} {{ i.unidadMedida }}</span></div> } @empty { <p class="vacio">Todo el inventario está sobre el mínimo.</p> }
+
+    <section class="tarjeta">
+      <div class="panel-titulo">
+        <div>
+          <h2>Alertas de inventario</h2>
+          <p class="texto-suave">Materiales que pueden afectar la continuidad de producción.</p>
+        </div>
+        <a routerLink="/inventario">Ver inventario →</a>
+      </div>
+      @for (i of d.insumosBajoStock; track i.idinsumo) {
+        <div class="item-lista">
+          <div><strong>{{ i.codigo }}</strong> · {{ i.nombre }}</div>
+          <span class="badge badge-peligro">{{ i.stockActual | number: '1.0-3' }} / mín. {{ i.stockMinimo | number: '1.0-3' }} {{ i.unidadMedida }}</span>
+        </div>
+      } @empty {
+        <div class="estado-ok-panel"><span>✓</span><strong>Inventario sin alertas</strong><small>Todos los insumos están sobre su stock mínimo.</small></div>
+      }
     </section>
   </div>
-} @else if (cargando()) { <p class="texto-suave">Cargando tablero…</p> }
+} @else if (cargando()) {
+  <p class="texto-suave">Cargando tablero…</p>
+}
