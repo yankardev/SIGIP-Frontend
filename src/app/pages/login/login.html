@@ -1,41 +1,26 @@
-<div class="acceso acceso-sigip">
+<div class="acceso acceso-sigip acceso-interno">
   <section class="acceso-brand" aria-label="SIGIP">
     <div class="acceso-brand-logo"><span>S</span><strong>SIGIP</strong></div>
     <p class="acceso-brand-sub">Sistema Integral de Gestión de Impresión y Pedidos</p>
-    <h2>Imprime tus ideas.<br />Gestiona tus pedidos.</h2>
-    <p>Una sola plataforma para clientes y personal interno, con accesos diferenciados según el rol.</p>
+    <h2>Tu operación interna.<br />En un solo lugar.</h2>
+    <p>Centraliza clientes, pedidos, pagos, diseños, producción e inventario con accesos controlados según el rol del personal.</p>
     <div class="acceso-flujo">
-      <span>Catálogo</span><i>→</i><span>Pedido</span><i>→</i><span>Diseño</span><i>→</i><span>Producción</span>
+      <span>Ventas</span><i>→</i><span>Diseño</span><i>→</i><span>Producción</span><i>→</i><span>Entrega</span>
     </div>
   </section>
 
   <form class="tarjeta acceso-tarjeta acceso-form" [formGroup]="form" (ngSubmit)="ingresar()">
-    <span class="login-kicker">BIENVENIDO A SIGIP</span>
+    <span class="login-kicker">ACCESO INTERNO · SIGIP</span>
     <h1>Iniciar sesión</h1>
-    <p class="texto-suave login-intro">Ingresa con tu usuario. SIGIP te dirigirá al portal de compras o al panel administrativo según tu rol.</p>
-
-    <label class="campo">
-      <span>Usuario</span>
-      <input formControlName="nomusuario" autocomplete="username" placeholder="Ingresa tu usuario" />
-      @if (form.controls.nomusuario.touched && form.controls.nomusuario.invalid) {
-        <small class="error">El usuario es obligatorio</small>
-      }
+    <p class="texto-suave login-intro">Ingresa con las credenciales asignadas por el administrador de la empresa.</p>
+    <label class="campo"><span>Usuario</span><input formControlName="nomusuario" autocomplete="username" placeholder="Ingresa tu usuario" />
+      @if (form.controls.nomusuario.touched && form.controls.nomusuario.invalid) { <small class="error">El usuario es obligatorio</small> }
     </label>
-    <label class="campo">
-      <span>Contraseña</span>
-      <input type="password" formControlName="password" autocomplete="current-password" placeholder="Ingresa tu contraseña" />
-      @if (form.controls.password.touched && form.controls.password.invalid) {
-        <small class="error">La contraseña es obligatoria</small>
-      }
+    <label class="campo"><span>Contraseña</span><input type="password" formControlName="password" autocomplete="current-password" placeholder="Ingresa tu contraseña" />
+      @if (form.controls.password.touched && form.controls.password.invalid) { <small class="error">La contraseña es obligatoria</small> }
     </label>
-
-    @if (error()) {
-      <p class="alerta alerta-error">{{ error() }}</p>
-    }
-
-    <button class="btn btn-primario btn-bloque login-btn" [disabled]="cargando()">
-      {{ cargando() ? 'Ingresando…' : 'Ingresar a SIGIP' }}
-    </button>
-    <p class="texto-suave centrado login-registro">¿Eres cliente nuevo? <a routerLink="/registro">Crear una cuenta</a></p>
+    @if (error()) { <p class="alerta alerta-error">{{ error() }}</p> }
+    <button class="btn btn-primario btn-bloque login-btn" [disabled]="cargando()">{{ cargando() ? 'Ingresando…' : 'Ingresar al sistema' }}</button>
+    <p class="texto-suave centrado login-registro">Sistema de uso exclusivo para personal autorizado.</p>
   </form>
 </div>
