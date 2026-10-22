@@ -1,65 +1,23 @@
-<div class="cabecera-pagina">
-  <div>
-    <h1>Dashboard</h1>
-    <p class="texto-suave">
-      Resumen del negocio
-      @if (datos(); as d) { · actualizado {{ d.generadoEn | date: 'dd/MM/yyyy HH:mm:ss' }} }
-    </p>
-  </div>
-  <button type="button" class="btn btn-secundario" (click)="cargar()" [disabled]="cargando()">Actualizar</button>
+<div class="cabecera-pagina dashboard-cabecera">
+  <div><span class="seccion-kicker">RESUMEN DE GESTIÓN</span><h1>Dashboard - Área Comercial</h1><p class="texto-suave">Resumen de la gestión de clientes, pedidos y operación interna.</p></div>
+  <button type="button" class="btn btn-secundario" (click)="cargar()" [disabled]="cargando()">↻ Actualizar</button>
 </div>
 
 @if (datos(); as d) {
-  @for (aviso of d.avisos; track aviso) {
-    <p class="alerta alerta-aviso">{{ aviso }}</p>
-  }
-
-  <div class="kpis">
-    <div class="tarjeta kpi">
-      <span class="texto-suave">Ventas confirmadas</span>
-      <strong>{{ (d.ventas?.ventasConfirmadas ?? 0) | currency: 'PEN' : 'S/' }}</strong>
-    </div>
-    <div class="tarjeta kpi">
-      <span class="texto-suave">Pedidos totales</span>
-      <strong>{{ d.ventas?.totalPedidos ?? 0 | number }}</strong>
-    </div>
-    <a class="tarjeta kpi enlace" routerLink="/pedidos">
-      <span class="texto-suave">Por atender</span>
-      <strong>{{ d.pedidosPorAtender | number }}</strong>
-    </a>
-    <a class="tarjeta kpi enlace" routerLink="/produccion">
-      <span class="texto-suave">En taller</span>
-      <strong>{{ d.pedidosEnTaller | number }}</strong>
-    </a>
+  @for (aviso of d.avisos; track aviso) { <p class="alerta alerta-aviso">{{ aviso }}</p> }
+  <div class="kpis kpis-internos">
+    <a class="tarjeta kpi kpi-azul" routerLink="/pedidos"><span class="kpi-icono">▣</span><span class="texto-suave">Pedidos totales</span><strong>{{ d.ventas?.totalPedidos ?? 0 | number }}</strong><small>Registrados en SIGIP</small></a>
+    <div class="tarjeta kpi kpi-verde"><span class="kpi-icono">S/</span><span class="texto-suave">Ventas confirmadas</span><strong>{{ (d.ventas?.ventasConfirmadas ?? 0) | currency: 'PEN' : 'S/' }}</strong><small>Ingresos confirmados</small></div>
+    <a class="tarjeta kpi kpi-naranja" routerLink="/pedidos"><span class="kpi-icono">◎</span><span class="texto-suave">Pedidos por atender</span><strong>{{ d.pedidosPorAtender | number }}</strong><small>Requieren seguimiento</small></a>
+    <a class="tarjeta kpi kpi-morado" routerLink="/produccion"><span class="kpi-icono">⚙</span><span class="texto-suave">En producción</span><strong>{{ d.pedidosEnTaller | number }}</strong><small>Trabajos en taller</small></a>
   </div>
 
-  <div class="rejilla-2 alinear-arriba">
-    <section class="tarjeta">
-      <h2>Pedidos por estado</h2>
-      <div class="barras">
-        @for (b of porEstado(); track b.estado) {
-          <div class="barra-fila">
-            <span class="barra-etiqueta">{{ b.estado | etiqueta }}</span>
-            <span class="barra-pista"><span class="barra" [style.width.%]="b.ancho"></span></span>
-            <span class="barra-valor">{{ b.cantidad }}</span>
-          </div>
-        }
-      </div>
+  <div class="rejilla-2 alinear-arriba dashboard-paneles">
+    <section class="tarjeta"><div class="panel-titulo"><div><h2>Pedidos por estado</h2><p class="texto-suave">Seguimiento del flujo comercial y operativo</p></div><a routerLink="/pedidos">Ver todos →</a></div>
+      <div class="barras">@for (b of porEstado(); track b.estado) { <div class="barra-fila"><span class="barra-etiqueta">{{ b.estado | etiqueta }}</span><span class="barra-pista"><span class="barra" [style.width.%]="b.ancho"></span></span><span class="barra-valor">{{ b.cantidad }}</span></div> }</div>
     </section>
-
-    <section class="tarjeta">
-      <h2>Insumos bajo stock mínimo</h2>
-      @for (i of d.insumosBajoStock; track i.idinsumo) {
-        <div class="item-lista">
-          <div><strong>{{ i.codigo }}</strong> · {{ i.nombre }}</div>
-          <span class="badge badge-peligro">{{ i.stockActual | number: '1.0-3' }} / mín. {{ i.stockMinimo | number: '1.0-3' }} {{ i.unidadMedida }}</span>
-        </div>
-      } @empty {
-        <p class="vacio">Todo el inventario está sobre el mínimo.</p>
-      }
-      <a routerLink="/inventario">Ir a inventario →</a>
+    <section class="tarjeta"><div class="panel-titulo"><div><h2>Alertas de inventario</h2><p class="texto-suave">Insumos por debajo del stock mínimo</p></div><a routerLink="/inventario">Ver inventario →</a></div>
+      @for (i of d.insumosBajoStock; track i.idinsumo) { <div class="item-lista"><div><strong>{{ i.codigo }}</strong> · {{ i.nombre }}</div><span class="badge badge-peligro">{{ i.stockActual | number: '1.0-3' }} / mín. {{ i.stockMinimo | number: '1.0-3' }} {{ i.unidadMedida }}</span></div> } @empty { <p class="vacio">Todo el inventario está sobre el mínimo.</p> }
     </section>
   </div>
-} @else if (cargando()) {
-  <p class="texto-suave">Cargando tablero…</p>
-}
+} @else if (cargando()) { <p class="texto-suave">Cargando tablero…</p> }
