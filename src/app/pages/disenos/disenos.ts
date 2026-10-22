@@ -10,14 +10,13 @@ import { NotificadorService } from '../../core/notificador.service';
 import { EstadoBadge } from '../../shared/estado-badge';
 import { Modal } from '../../shared/modal';
 
-/** Versiones de diseño: el administrador las publica y el cliente las aprueba u observa. */
+/** Versiones y validaciones del diseño antes de producción. */
 @Component({
   selector: 'app-disenos',
   imports: [DatePipe, FormsModule, RouterLink, EstadoBadge, Modal],
   templateUrl: './disenos.html',
 })
 export class Disenos implements OnInit {
-  /** ?pedido=ID en la URL (filtro inicial). */
   readonly pedido = input<string>();
 
   protected readonly auth = inject(AuthService);
@@ -38,9 +37,7 @@ export class Disenos implements OnInit {
     const p = Number(this.pedido());
     this.filtroPedido = p > 0 ? p : null;
     this.cargar();
-    if (this.filtroPedido && this.auth.esAdmin()) {
-      this.nuevo();
-    }
+    if (this.filtroPedido && this.auth.esAdmin()) this.nuevo();
   }
 
   cargar(): void {
@@ -70,10 +67,8 @@ export class Disenos implements OnInit {
   }
 
   guardar(): void {
-    const peticion = this.editandoId
-      ? this.servicio.actualizar(this.editandoId, this.form)
-      : this.servicio.registrar(this.form);
-    this.ejecutar(peticion, this.editandoId ? 'Diseño actualizado' : 'Nueva versión publicada para el cliente');
+    const peticion = this.editandoId ? this.servicio.actualizar(this.editandoId, this.form) : this.servicio.registrar(this.form);
+    this.ejecutar(peticion, this.editandoId ? 'Diseño actualizado' : 'Nueva versión registrada para validación');
   }
 
   eliminar(d: Diseno): void {
@@ -91,7 +86,7 @@ export class Disenos implements OnInit {
     if (!d) return;
     this.ejecutar(
       this.servicio.decidir(d.iddiseno, this.decision.tipo, this.decision.comentario),
-      this.decision.tipo === 'APROBAR' ? '¡Diseño aprobado! El taller ya puede producir tu pedido' : 'Observación enviada al diseñador',
+      this.decision.tipo === 'APROBAR' ? 'Diseño aprobado: el pedido puede continuar a Producción' : 'Observación registrada para una nueva versión',
     );
   }
 
