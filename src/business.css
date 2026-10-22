@@ -1,0 +1,57 @@
+/* SIGIP · proceso empresarial completo: cliente + gestión interna */
+
+/* El mapa del negocio ahora tiene siete etapas y debe conservar legibilidad. */
+.flujo-etapas {
+  display: flex !important;
+  align-items: stretch;
+  gap: 7px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.flujo-etapa { flex: 1 0 118px; min-width: 118px; }
+.flujo-flecha { flex: 0 0 16px; min-width: 16px; }
+
+/* Portal de cliente: visual más simple que el backoffice. */
+.shell-cliente .cliente-contenido {
+  width: min(1180px, calc(100% - 34px));
+  margin: 0 auto;
+  padding: 28px 0 48px;
+}
+.shell-cliente .cabecera-pagina h1 { font-size: 25px; color: #102e49; }
+.shell-cliente .cabecera-pagina p { font-size: 12px; }
+.shell-cliente .seccion-kicker { font-size: 9px; }
+.shell-cliente .tarjeta { border-radius: 12px; box-shadow: 0 7px 24px rgba(27,67,100,.06); }
+.shell-cliente .catalogo-interno { grid-template-columns: repeat(auto-fill,minmax(250px,1fr)); }
+.shell-cliente .servicio-interno { min-height: 330px; }
+.shell-cliente .servicio-imagen { min-height: 115px; background: linear-gradient(135deg,#eaf5ff,#f6f9fd); }
+.shell-cliente .btn-primario { min-height: 34px; }
+
+/* Tablas de negocio */
+.tabla td .btn + .btn { margin-left: 4px; }
+.tabla .nowrap { white-space: nowrap; }
+
+/* Maestro de clientes y cotizaciones */
+.sigip-interno .cabecera-pagina .buscador { min-width: 230px; }
+
+/* Login: deja claro que existen dos audiencias conectadas. */
+.acceso-flujo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+}
+.acceso-flujo span {
+  padding: 7px 10px;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  font-size: 11px;
+}
+.acceso-flujo i { font-style: normal; opacity: .7; }
+.login-registro { margin-top: 15px; }
+
+@media (max-width: 900px) {
+  .shell-cliente .cliente-contenido { width: min(100% - 24px,1180px); padding-top: 20px; }
+  .flujo-etapa { flex-basis: 150px; }
+}
