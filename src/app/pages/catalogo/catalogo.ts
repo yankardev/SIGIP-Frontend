@@ -2,9 +2,9 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
 import { AuthService } from '../../core/auth.service';
-import { Categoria, Servicio, Usuario } from '../../core/models';
+import { Categoria, Cotizacion, Pedido, Servicio, Usuario } from '../../core/models';
 import { CatalogoService } from '../../core/services/catalogo.service';
 import { ClientesService } from '../../core/services/clientes.service';
 import { VentasService } from '../../core/services/ventas.service';
@@ -82,7 +82,7 @@ export class Catalogo implements OnInit {
     this.guardando.set(true);
     const base = { idservicio: servicio.idservicio, cantidad: this.cantidad, especificaciones: this.especificaciones };
     const datos = this.auth.esInterno() ? { ...base, cliente: this.cliente } : base;
-    const peticion = servicio.requiereCotizacion
+    const peticion: Observable<Pedido | Cotizacion> = servicio.requiereCotizacion
       ? this.ventas.solicitarCotizacion(datos)
       : this.ventas.registrar(datos);
 
@@ -94,7 +94,7 @@ export class Catalogo implements OnInit {
           this.notificador.ok('Solicitud de cotización registrada. El área comercial evaluará el precio.');
           this.router.navigate(['/cotizaciones']);
         } else {
-          const pedido = resultado as { idpedido: number };
+          const pedido = resultado as Pedido;
           this.notificador.ok(`Pedido #${pedido.idpedido} registrado. El siguiente paso es registrar el pago.`);
           this.router.navigate(['/pedidos', pedido.idpedido]);
         }
