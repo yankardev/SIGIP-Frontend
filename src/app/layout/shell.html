@@ -1,71 +1,67 @@
-<div class="shell shell-admin sigip-interno" [class.menu-abierto]="menuAbierto()">
-  <aside class="sidebar admin-sidebar">
-    <a class="marca admin-marca" routerLink="/dashboard">
-      <span class="marca-logo">S</span>
-      <span class="marca-texto">
-        <strong>SIGIP</strong>
-        <small>Sistema Integral de Gestión<br />de Impresión y Pedidos</small>
-      </span>
-    </a>
-
-    <div class="sidebar-menu">
-      @for (grupo of grupos; track grupo.id) {
-        @if (opcionesGrupo(grupo.id).length > 0) {
-          <section class="menu-grupo">
-            <div class="menu-grupo-titulo">{{ grupo.texto }}</div>
-            <nav>
-              @for (o of opcionesGrupo(grupo.id); track o.ruta) {
-                <a [routerLink]="o.ruta" routerLinkActive="activo" (click)="menuAbierto.set(false)">
-                  <span class="icono" aria-hidden="true">{{ o.icono }}</span>
-                  <span class="menu-texto">{{ o.texto }}</span>
-                  @if (o.ruta === '/notificaciones' && notificaciones.noLeidas() > 0) {
-                    <span class="contador-menu">{{ notificaciones.noLeidas() }}</span>
-                  }
-                </a>
-              }
-            </nav>
-          </section>
-        }
-      }
-    </div>
-
-    <div class="admin-pie admin-pie-flujo">
-      <span class="estado-dot"></span>
-      <div>
-        <strong>Flujo interno SIGIP</strong>
-        <small>Ventas → Diseño → Producción → Inventario → Entrega</small>
-      </div>
-    </div>
-  </aside>
-
-  <div class="principal">
-    <header class="topbar admin-topbar">
-      <button type="button" class="btn-icono hamburguesa" aria-label="Menú" (click)="menuAbierto.set(!menuAbierto())">☰</button>
-
-      <div class="busqueda-global">
-        <span aria-hidden="true">⌕</span>
-        <input aria-label="Buscar en SIGIP" placeholder="Buscar en el sistema..." />
-      </div>
-
-      <span class="espaciador"></span>
-
-      <a class="campana" routerLink="/notificaciones" aria-label="Notificaciones">
-        ♧
-        @if (notificaciones.noLeidas() > 0) { <span class="contador">{{ notificaciones.noLeidas() }}</span> }
+@if (auth.esInterno()) {
+  <div class="shell shell-admin sigip-interno" [class.menu-abierto]="menuAbierto()">
+    <aside class="sidebar admin-sidebar">
+      <a class="marca admin-marca" routerLink="/inicio">
+        <span class="marca-logo">S</span>
+        <span class="marca-texto"><strong>SIGIP</strong><small>Gestión empresarial<br />de impresión y pedidos</small></span>
       </a>
 
-      @if (auth.usuario(); as u) {
-        <div class="perfil perfil-interno">
-          <span class="avatar-interno">{{ u.nombres.charAt(0) }}{{ u.apellidos.charAt(0) }}</span>
-          <span class="perfil-datos"><strong>{{ u.nombres }} {{ u.apellidos }}</strong><small>{{ rolVisible }}</small></span>
-        </div>
-      }
+      <div class="sidebar-menu">
+        @for (grupo of grupos; track grupo.id) {
+          @if (opcionesGrupo(grupo.id).length > 0) {
+            <section class="menu-grupo">
+              <div class="menu-grupo-titulo">{{ grupo.texto }}</div>
+              <nav>
+                @for (o of opcionesGrupo(grupo.id); track o.ruta) {
+                  <a [routerLink]="o.ruta" routerLinkActive="activo" (click)="menuAbierto.set(false)">
+                    <span class="icono" aria-hidden="true">{{ o.icono }}</span><span class="menu-texto">{{ o.texto }}</span>
+                    @if (o.ruta === '/notificaciones' && notificaciones.noLeidas() > 0) {
+                      <span class="contador-menu">{{ notificaciones.noLeidas() }}</span>
+                    }
+                  </a>
+                }
+              </nav>
+            </section>
+          }
+        }
+      </div>
 
-      <button type="button" class="btn btn-secundario salir-interno" (click)="auth.logout()">Salir</button>
-    </header>
+      <div class="admin-pie admin-pie-flujo"><span class="estado-dot"></span><div><strong>Proceso conectado</strong><small>Ventas → Diseño → Producción → Inventario → Entrega</small></div></div>
+    </aside>
 
-    <main class="contenido admin-contenido"><router-outlet /></main>
+    <div class="principal">
+      <header class="topbar admin-topbar">
+        <button type="button" class="btn-icono hamburguesa" aria-label="Menú" (click)="menuAbierto.set(!menuAbierto())">☰</button>
+        <div class="busqueda-global"><span aria-hidden="true">⌕</span><input aria-label="Buscar en SIGIP" placeholder="Buscar pedido, cliente o servicio..." /></div>
+        <span class="espaciador"></span>
+        <a class="campana" routerLink="/notificaciones" aria-label="Notificaciones">✉@if (notificaciones.noLeidas() > 0) { <span class="contador">{{ notificaciones.noLeidas() }}</span> }</a>
+        @if (auth.usuario(); as u) {
+          <div class="perfil perfil-interno"><span class="avatar-interno">{{ u.nombres.charAt(0) }}{{ u.apellidos.charAt(0) }}</span><span class="perfil-datos"><strong>{{ u.nombres }} {{ u.apellidos }}</strong><small>{{ rolVisible }}</small></span></div>
+        }
+        <button type="button" class="btn btn-secundario salir-interno" (click)="auth.logout()">Salir</button>
+      </header>
+      <main class="contenido admin-contenido"><router-outlet /></main>
+    </div>
+    <div class="velo" (click)="menuAbierto.set(false)"></div>
   </div>
-
-  <div class="velo" (click)="menuAbierto.set(false)"></div>
-</div>
+} @else {
+  <div class="shell-cliente" [class.menu-abierto]="menuAbierto()">
+    <header class="cliente-topbar">
+      <a class="cliente-marca" routerLink="/catalogo"><span class="cliente-logo">S</span><span><strong>SIGIP</strong><small>Portal del cliente</small></span></a>
+      <button type="button" class="cliente-menu-btn" aria-label="Abrir menú" (click)="menuAbierto.set(!menuAbierto())">☰</button>
+      <nav class="cliente-nav">
+        @for (o of opcionesCliente; track o.ruta) {
+          <a [routerLink]="o.ruta" routerLinkActive="activo" (click)="menuAbierto.set(false)"><span aria-hidden="true">{{ o.icono }}</span>{{ o.texto }}
+            @if (o.ruta === '/notificaciones' && notificaciones.noLeidas() > 0) { <b class="cliente-contador">{{ notificaciones.noLeidas() }}</b> }
+          </a>
+        }
+      </nav>
+      <div class="cliente-perfil">
+        @if (auth.usuario(); as u) { <span class="cliente-avatar">{{ u.nombres.charAt(0) }}</span><span class="cliente-perfil-texto"><strong>{{ u.nombres }}</strong><small>Cliente</small></span> }
+        <button type="button" class="cliente-salir" (click)="auth.logout()">Salir</button>
+      </div>
+    </header>
+    <main class="contenido cliente-contenido"><router-outlet /></main>
+    <div class="cliente-velo" (click)="menuAbierto.set(false)"></div>
+  </div>
+}
