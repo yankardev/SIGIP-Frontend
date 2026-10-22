@@ -1,207 +1,54 @@
 @if (pedido(); as p) {
   <div class="cabecera-pagina pedido-cabecera">
-    <div>
-      <a class="volver" routerLink="/pedidos">← Volver a pedidos</a>
-      <span class="seccion-kicker">TRAZABILIDAD DEL PEDIDO</span>
-      <h1>Pedido #{{ p.idpedido }} <app-estado [valor]="p.estado" /></h1>
-      <p class="texto-suave">Cliente: <strong>{{ p.cliente }}</strong> · registrado el {{ p.fechaPedido | date: 'dd/MM/yyyy HH:mm' }}</p>
-    </div>
+    <div><a class="volver" routerLink="/pedidos">← Volver a pedidos</a><span class="seccion-kicker">TRAZABILIDAD DEL PEDIDO</span><h1>Pedido #{{ p.idpedido }} <app-estado [valor]="p.estado" /></h1><p class="texto-suave">@if (auth.esInterno()) { Cliente: <strong>{{ p.cliente }}</strong> · } registrado el {{ p.fechaPedido | date:'dd/MM/yyyy HH:mm' }}</p></div>
     <div class="fila">
-      @if (editable()) {
-        <button type="button" class="btn btn-primario" (click)="abrirPago()">Registrar pago</button>
-        <button type="button" class="btn btn-secundario" (click)="abrirEdicion()">Editar pedido</button>
-      }
-      @if (auth.esAdmin() && p.siguientesEstados.length > 0) {
-        <button type="button" class="btn btn-secundario" (click)="abrirCambioEstado()">Cambiar estado</button>
-      }
+      @if (editable() && !auth.tieneRol('OPERACIONES')) { <button type="button" class="btn btn-primario" (click)="abrirPago()">Registrar pago</button><button type="button" class="btn btn-secundario" (click)="abrirEdicion()">Editar</button> }
+      @if (p.estado === 'TERMINADO' && (auth.esAdmin() || auth.tieneRol('VENTAS'))) { <button type="button" class="btn btn-primario" (click)="abrirCambioEstado()">Registrar entrega</button> }
     </div>
   </div>
 
   @if (p.estado !== 'CANCELADO') {
-    <section class="tarjeta trazabilidad-card">
-      <div class="trazabilidad-cabecera">
-        <div>
-          <span class="seccion-kicker">FLUJO DEL PEDIDO</span>
-          <h2>Estado actual y siguiente etapa</h2>
-        </div>
-        <small class="texto-suave">El pedido solo avanza cuando la etapa anterior ha sido validada.</small>
-      </div>
-      <ol class="avance avance-interno">
-        @for (paso of pasos; track paso; let i = $index) {
-          <li [class.hecho]="i < indiceActual()" [class.actual]="i === indiceActual()">
-            <span class="punto">{{ i < indiceActual() ? '✓' : i + 1 }}</span>
-            <span>{{ paso | etiqueta }}</span>
-          </li>
-        }
-      </ol>
-    </section>
+    <section class="tarjeta trazabilidad-card"><div class="trazabilidad-cabecera"><div><span class="seccion-kicker">FLUJO DEL NEGOCIO</span><h2>Estado del trabajo</h2></div><small class="texto-suave">Cada etapa depende de la validación de la anterior.</small></div><ol class="avance avance-interno">@for (paso of pasos; track paso; let i = $index) { <li [class.hecho]="i < indiceActual()" [class.actual]="i === indiceActual()"><span class="punto">{{ i < indiceActual() ? '✓' : i + 1 }}</span><span>{{ paso | etiqueta }}</span></li> }</ol></section>
   }
 
   <section class="siguiente-accion">
-    <div class="siguiente-accion-icono">→</div>
-    <div class="siguiente-accion-copy">
-      <span class="seccion-kicker">SIGUIENTE ACCIÓN RECOMENDADA</span>
+    <div class="siguiente-accion-icono">→</div><div class="siguiente-accion-copy"><span class="seccion-kicker">SIGUIENTE ACCIÓN</span>
       @switch (p.estado) {
-        @case ('REGISTRADO') {
-          <h2>Registrar el pago del pedido</h2>
-          <p>El pedido todavía no puede continuar a diseño o producción hasta que exista un pago registrado y validado.</p>
-        }
-        @case ('PAGO_EN_REVISION') {
-          <h2>Verificar el pago</h2>
-          <p>Revisa los datos del pago pendiente. Al aprobarlo, el pedido pasará a estado Confirmado.</p>
-        }
-        @case ('CONFIRMADO') {
-          <h2>Iniciar la gestión del diseño</h2>
-          <p>El pago ya fue validado. Registra una versión del arte y realiza la validación correspondiente antes de producir.</p>
-        }
-        @case ('EN_DISENO') {
-          <h2>Completar la validación del diseño</h2>
-          <p>Gestiona las versiones del arte hasta obtener una versión aprobada para producción.</p>
-        }
-        @case ('EN_PRODUCCION') {
-          <h2>Continuar el trabajo en producción</h2>
-          <p>Controla la orden de producción, responsable, avance y resultado del control de calidad.</p>
-        }
-        @case ('TERMINADO') {
-          <h2>Registrar la entrega</h2>
-          <p>El trabajo ya terminó. Verifica la entrega al cliente y actualiza el pedido a Entregado.</p>
-        }
-        @case ('ENTREGADO') {
-          <h2>Proceso completado</h2>
-          <p>El pedido finalizó correctamente y queda disponible para consulta y reportes.</p>
-        }
+        @case ('REGISTRADO') { <h2>Registrar el pago</h2><p>El trabajo no pasa a diseño hasta que el pago sea registrado y verificado.</p> }
+        @case ('PAGO_EN_REVISION') { <h2>{{ auth.esInterno() ? 'Validar el pago recibido' : 'Pago en revisión' }}</h2><p>{{ auth.esInterno() ? 'Ventas debe aprobar o rechazar el comprobante.' : 'La empresa está revisando el pago. Cuando se apruebe, el pedido quedará confirmado.' }}</p> }
+        @case ('CONFIRMADO') { <h2>{{ auth.esInterno() ? 'Preparar propuesta de diseño' : 'Pedido confirmado' }}</h2><p>{{ auth.esInterno() ? 'Operaciones debe registrar el arte para enviarlo al cliente.' : 'La empresa preparará el diseño antes de producir.' }}</p> }
+        @case ('EN_DISENO') { <h2>{{ auth.esCliente() ? 'Revisar y aprobar el diseño' : 'Gestionar aprobación del diseño' }}</h2><p>Producción no puede iniciar hasta contar con una versión aprobada por el cliente.</p> }
+        @case ('EN_PRODUCCION') { <h2>Trabajo en producción</h2><p>Se controla responsable, avance, consumo de insumos y control de calidad.</p> }
+        @case ('TERMINADO') { <h2>{{ auth.esInterno() ? 'Entregar el trabajo al cliente' : 'Tu trabajo está listo' }}</h2><p>El pedido finalizó producción y está pendiente de entrega.</p> }
+        @case ('ENTREGADO') { <h2>Proceso completado</h2><p>El pedido fue producido y entregado. Su historial queda disponible como evidencia.</p> }
       }
     </div>
     <div class="siguiente-accion-botones">
-      @if (p.estado === 'REGISTRADO') {
-        <button type="button" class="btn btn-primario" (click)="abrirPago()">Registrar pago</button>
-      }
-      @if (p.estado === 'CONFIRMADO' || p.estado === 'EN_DISENO') {
-        <a class="btn btn-primario" routerLink="/disenos" [queryParams]="{ pedido: p.idpedido }">Ir a diseño</a>
-      }
-      @if (p.estado === 'EN_PRODUCCION') {
-        <a class="btn btn-primario" routerLink="/produccion" [queryParams]="{ pedido: p.idpedido }">Ir a producción</a>
-      }
-      @if (p.estado === 'TERMINADO' && auth.esAdmin()) {
-        <button type="button" class="btn btn-primario" (click)="abrirCambioEstado()">Registrar entrega</button>
-      }
+      @if (p.estado === 'REGISTRADO' && !auth.tieneRol('OPERACIONES')) { <button type="button" class="btn btn-primario" (click)="abrirPago()">Registrar pago</button> }
+      @if (p.estado === 'CONFIRMADO' && (auth.esAdmin() || auth.tieneRol('OPERACIONES'))) { <a class="btn btn-primario" routerLink="/disenos" [queryParams]="{pedido:p.idpedido}">Crear diseño</a> }
+      @if (p.estado === 'EN_DISENO' && (auth.esCliente() || auth.esAdmin() || auth.tieneRol('OPERACIONES'))) { <a class="btn btn-primario" routerLink="/disenos" [queryParams]="{pedido:p.idpedido}">{{ auth.esCliente() ? 'Revisar diseño' : 'Gestionar diseño' }}</a> }
+      @if ((p.estado === 'CONFIRMADO' || p.estado === 'EN_DISENO') && (auth.esAdmin() || auth.tieneRol('OPERACIONES'))) { <a class="btn btn-secundario" routerLink="/produccion" [queryParams]="{pedido:p.idpedido}">Crear orden de producción</a> }
+      @if (p.estado === 'EN_PRODUCCION' && (auth.esAdmin() || auth.tieneRol('OPERACIONES'))) { <a class="btn btn-primario" routerLink="/produccion">Controlar producción</a> }
+      @if (p.estado === 'TERMINADO' && (auth.esAdmin() || auth.tieneRol('VENTAS'))) { <button type="button" class="btn btn-primario" (click)="abrirCambioEstado()">Confirmar entrega</button> }
     </div>
   </section>
 
   <div class="detalle-pedido-grid">
-    <section class="tarjeta detalle-pedido-panel">
-      <div class="panel-titulo">
-        <div><h2>Información comercial</h2><p class="texto-suave">Datos con los que se registró el trabajo.</p></div>
-      </div>
-      <dl class="datos datos-internos">
-        <dt>Cliente</dt><dd><strong>{{ p.cliente }}</strong></dd>
-        <dt>Servicio</dt><dd>{{ p.nombreServicio }}</dd>
-        <dt>Cantidad</dt><dd>{{ p.cantidad }}</dd>
-        <dt>Precio unitario</dt><dd>{{ p.precioUnitario | currency: 'PEN' : 'S/' }}</dd>
-        <dt>Total</dt><dd><strong class="total-destacado">{{ p.total | currency: 'PEN' : 'S/' }}</strong></dd>
-        <dt>Especificaciones</dt><dd>{{ p.especificaciones || 'Sin especificaciones adicionales' }}</dd>
-        <dt>Observación</dt><dd>{{ p.observacion || '—' }}</dd>
-      </dl>
-
-      @if (cancelable()) {
-        <div class="acciones acciones-secundarias">
-          @if (editable()) {
-            <button type="button" class="btn btn-secundario" (click)="abrirEdicion()">Editar</button>
-            <button type="button" class="btn btn-peligro-suave" (click)="eliminar()" [disabled]="trabajando()">Eliminar</button>
-          }
-          <button type="button" class="btn btn-peligro-suave" (click)="cancelar()" [disabled]="trabajando()">Cancelar pedido</button>
-        </div>
-      }
+    <section class="tarjeta detalle-pedido-panel"><div class="panel-titulo"><div><h2>Información del trabajo</h2><p class="texto-suave">Datos comerciales congelados al registrar el pedido.</p></div></div><dl class="datos datos-internos">@if (auth.esInterno()) { <dt>Cliente</dt><dd><strong>{{ p.cliente }}</strong></dd> }<dt>Servicio</dt><dd>{{ p.nombreServicio }}</dd><dt>Cantidad</dt><dd>{{ p.cantidad }}</dd><dt>Precio unitario</dt><dd>{{ p.precioUnitario | currency:'PEN':'S/' }}</dd><dt>Total</dt><dd><strong class="total-destacado">{{ p.total | currency:'PEN':'S/' }}</strong></dd><dt>Especificaciones</dt><dd>{{ p.especificaciones || 'Sin especificaciones' }}</dd><dt>Observación</dt><dd>{{ p.observacion || '—' }}</dd></dl>
+      @if (cancelable() && !auth.tieneRol('OPERACIONES')) { <div class="acciones acciones-secundarias">@if (editable()) { <button type="button" class="btn btn-secundario" (click)="abrirEdicion()">Editar</button><button type="button" class="btn btn-peligro-suave" (click)="eliminar()" [disabled]="trabajando()">Eliminar</button> }<button type="button" class="btn btn-peligro-suave" (click)="cancelar()" [disabled]="trabajando()">Cancelar</button></div> }
     </section>
 
-    <section class="tarjeta detalle-pedido-panel">
-      <div class="panel-titulo">
-        <div><h2>Pagos</h2><p class="texto-suave">El pago debe validarse antes de continuar con el trabajo.</p></div>
-        @if (editable()) { <button type="button" class="btn btn-primario btn-pequeno" (click)="abrirPago()">+ Pago</button> }
-      </div>
-      @for (pg of pagos(); track pg.idpago) {
-        <div class="registro-operativo">
-          <div class="registro-operativo-icono">S/</div>
-          <div class="registro-operativo-copy">
-            <strong>{{ pg.monto | currency: 'PEN' : 'S/' }}</strong>
-            <span>{{ pg.metodo | etiqueta }} · operación {{ pg.numeroOperacion }}</span>
-            <small>{{ pg.fechaRegistro | date: 'dd/MM/yyyy HH:mm' }}@if (pg.verificadoPor) { · verificado por {{ pg.verificadoPor }} }</small>
-            @if (pg.observacion) { <small>{{ pg.observacion }}</small> }
-          </div>
-          <div class="registro-operativo-accion">
-            <app-estado [valor]="pg.estado" />
-            @if (auth.esAdmin() && pg.estado === 'PENDIENTE') {
-              <button type="button" class="btn btn-primario btn-pequeno" (click)="abrirVerificacion(pg)">Verificar</button>
-            }
-          </div>
-        </div>
-      } @empty {
-        <p class="vacio">Aún no hay pagos registrados.</p>
-      }
+    <section class="tarjeta detalle-pedido-panel"><div class="panel-titulo"><div><h2>Pagos</h2><p class="texto-suave">Comprobante y validación comercial.</p></div>@if (editable() && !auth.tieneRol('OPERACIONES')) { <button type="button" class="btn btn-primario btn-pequeno" (click)="abrirPago()">+ Registrar</button> }</div>
+      @for (pg of pagos(); track pg.idpago) { <div class="registro-operativo"><div class="registro-operativo-icono">S/</div><div class="registro-operativo-copy"><strong>{{ pg.monto | currency:'PEN':'S/' }}</strong><span>{{ pg.metodo | etiqueta }} · op. {{ pg.numeroOperacion }}</span><small>{{ pg.fechaRegistro | date:'dd/MM/yyyy HH:mm' }}@if (pg.verificadoPor) { · verificado por {{ pg.verificadoPor }} }</small>@if (pg.observacion) { <small>{{ pg.observacion }}</small> }</div><div class="registro-operativo-accion"><app-estado [valor]="pg.estado" />@if ((auth.esAdmin() || auth.tieneRol('VENTAS')) && pg.estado === 'PENDIENTE') { <button type="button" class="btn btn-primario btn-pequeno" (click)="abrirVerificacion(pg)">Verificar</button> }</div></div> } @empty { <p class="vacio">Aún no hay pagos registrados.</p> }
     </section>
 
-    <section class="tarjeta detalle-pedido-panel panel-ancho">
-      <div class="panel-titulo">
-        <div><h2>Diseños y versiones</h2><p class="texto-suave">Historial del arte asociado al pedido antes de producción.</p></div>
-        @if (p.estado === 'CONFIRMADO' || p.estado === 'EN_DISENO') {
-          <a class="btn btn-primario btn-pequeno" routerLink="/disenos" [queryParams]="{ pedido: p.idpedido }">Gestionar diseño</a>
-        }
-      </div>
-      <div class="tabla-contenedor">
-        <table class="tabla tabla-versiones">
-          <thead><tr><th>Versión</th><th>Archivo</th><th>Estado</th><th>Observación</th></tr></thead>
-          <tbody>
-            @for (d of listaDisenos(); track d.iddiseno) {
-              <tr><td><strong>v{{ d.version }}</strong></td><td>{{ d.nombreArchivo }}</td><td><app-estado [valor]="d.estado" /></td><td>{{ d.comentarioCliente || '—' }}</td></tr>
-            } @empty {
-              <tr><td colspan="4" class="vacio">Este pedido todavía no tiene diseños registrados.</td></tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </section>
+    <section class="tarjeta detalle-pedido-panel panel-ancho"><div class="panel-titulo"><div><h2>Diseños y aprobaciones</h2><p class="texto-suave">Cada versión y decisión queda trazable.</p></div>@if ((p.estado === 'CONFIRMADO' || p.estado === 'EN_DISENO') && (auth.esCliente() || auth.esAdmin() || auth.tieneRol('OPERACIONES'))) { <a class="btn btn-primario btn-pequeno" routerLink="/disenos" [queryParams]="{pedido:p.idpedido}">{{ auth.esCliente() ? 'Revisar' : 'Gestionar' }}</a> }</div><div class="tabla-contenedor"><table class="tabla"><thead><tr><th>Versión</th><th>Archivo</th><th>Estado</th><th>Comentario</th></tr></thead><tbody>@for (d of listaDisenos(); track d.iddiseno) { <tr><td><strong>v{{ d.version }}</strong></td><td>{{ d.nombreArchivo }}</td><td><app-estado [valor]="d.estado" /></td><td>{{ d.comentarioCliente || '—' }}</td></tr> } @empty { <tr><td colspan="4" class="vacio">Todavía no hay diseños registrados.</td></tr> }</tbody></table></div></section>
   </div>
 
   @switch (modal()) {
-    @case ('pago') {
-      <app-modal titulo="Registrar pago" (cerrar)="modal.set(null)">
-        <form (ngSubmit)="registrarPago()" #f="ngForm">
-          <div class="rejilla-2">
-            <label class="campo"><span>Monto (S/)</span><input type="number" name="monto" min="0.01" step="0.01" required [(ngModel)]="pago.monto" /></label>
-            <label class="campo"><span>Método</span><select name="metodo" [(ngModel)]="pago.metodo">@for (m of metodos; track m) { <option [value]="m">{{ m | etiqueta }}</option> }</select></label>
-          </div>
-          <label class="campo"><span>N.º de operación</span><input name="numeroOperacion" required maxlength="50" [(ngModel)]="pago.numeroOperacion" placeholder="Ej. 00012345" /></label>
-          <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Registrar pago</button></div>
-        </form>
-      </app-modal>
-    }
-    @case ('editar') {
-      <app-modal titulo="Editar pedido" (cerrar)="modal.set(null)">
-        <form (ngSubmit)="guardarEdicion()" #f="ngForm">
-          <label class="campo"><span>Cantidad</span><input type="number" name="cantidad" min="1" max="100000" required [(ngModel)]="edicion.cantidad" /></label>
-          <label class="campo"><span>Especificaciones</span><textarea name="especificaciones" rows="3" maxlength="1000" [(ngModel)]="edicion.especificaciones"></textarea></label>
-          <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar</button></div>
-        </form>
-      </app-modal>
-    }
-    @case ('estado') {
-      <app-modal titulo="Actualizar etapa del pedido" (cerrar)="modal.set(null)">
-        <form (ngSubmit)="cambiarEstado()">
-          <label class="campo"><span>Nuevo estado</span><select name="estado" required [(ngModel)]="cambio.estado">@for (e of p.siguientesEstados; track e) { <option [value]="e">{{ e | etiqueta }}</option> }</select></label>
-          <label class="campo"><span>Observación / responsable</span><textarea name="observacion" rows="2" maxlength="500" [(ngModel)]="cambio.observacion"></textarea></label>
-          <p class="texto-suave pequeno">SIGIP solo permite las transiciones válidas del flujo.</p>
-          <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="trabajando() || !cambio.estado">Aplicar cambio</button></div>
-        </form>
-      </app-modal>
-    }
-    @case ('verificar') {
-      <app-modal titulo="Verificar pago" (cerrar)="modal.set(null)">
-        <p>{{ verificacion.pago?.monto | currency: 'PEN' : 'S/' }} por {{ verificacion.pago?.metodo | etiqueta }}, operación <strong>{{ verificacion.pago?.numeroOperacion }}</strong>.</p>
-        <label class="campo"><span>Observación</span><textarea name="observacion" rows="2" maxlength="300" [(ngModel)]="verificacion.observacion"></textarea></label>
-        <div class="acciones"><button type="button" class="btn btn-peligro-suave" [disabled]="trabajando()" (click)="verificar(false)">Rechazar</button><button type="button" class="btn btn-primario" [disabled]="trabajando()" (click)="verificar(true)">Aprobar pago</button></div>
-      </app-modal>
-    }
+    @case ('pago') { <app-modal titulo="Registrar pago" (cerrar)="modal.set(null)"><form (ngSubmit)="registrarPago()" #f="ngForm"><div class="rejilla-2"><label class="campo"><span>Monto (S/)</span><input type="number" name="monto" min="0.01" step="0.01" required [(ngModel)]="pago.monto" /></label><label class="campo"><span>Método</span><select name="metodo" [(ngModel)]="pago.metodo">@for (m of metodos; track m) { <option [value]="m">{{ m | etiqueta }}</option> }</select></label></div><label class="campo"><span>N.º de operación / referencia</span><input name="numeroOperacion" required maxlength="50" [(ngModel)]="pago.numeroOperacion" /></label><div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Registrar pago</button></div></form></app-modal> }
+    @case ('editar') { <app-modal titulo="Editar pedido" (cerrar)="modal.set(null)"><form (ngSubmit)="guardarEdicion()" #f="ngForm"><label class="campo"><span>Cantidad</span><input type="number" name="cantidad" min="1" required [(ngModel)]="edicion.cantidad" /></label><label class="campo"><span>Especificaciones</span><textarea name="especificaciones" rows="3" [(ngModel)]="edicion.especificaciones"></textarea></label><div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar</button></div></form></app-modal> }
+    @case ('estado') { <app-modal titulo="Registrar entrega" (cerrar)="modal.set(null)"><form (ngSubmit)="cambiarEstado()"><input type="hidden" name="estado" [(ngModel)]="cambio.estado" /><label class="campo"><span>Observación de entrega</span><textarea name="observacion" rows="3" maxlength="500" [(ngModel)]="cambio.observacion" placeholder="Entregado a, documento, hora o comentario..."></textarea></label><p class="texto-suave pequeno">El pedido pasará de Terminado a Entregado.</p><div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="trabajando()">Confirmar entrega</button></div></form></app-modal> }
+    @case ('verificar') { <app-modal titulo="Verificar pago" (cerrar)="modal.set(null)"><p>{{ verificacion.pago?.monto | currency:'PEN':'S/' }} · {{ verificacion.pago?.metodo | etiqueta }} · operación <strong>{{ verificacion.pago?.numeroOperacion }}</strong></p><label class="campo"><span>Observación</span><textarea name="observacion" rows="2" [(ngModel)]="verificacion.observacion"></textarea></label><div class="acciones"><button type="button" class="btn btn-peligro-suave" (click)="verificar(false)" [disabled]="trabajando()">Rechazar</button><button type="button" class="btn btn-primario" (click)="verificar(true)" [disabled]="trabajando()">Aprobar pago</button></div></app-modal> }
   }
-} @else {
-  <p class="texto-suave">Cargando pedido…</p>
-}
+} @else { <p class="texto-suave">Cargando pedido…</p> }
