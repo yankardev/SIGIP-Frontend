@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
@@ -8,13 +8,15 @@ import { NotificadorService } from '../../core/notificador.service';
 import { EstadoBadge } from '../../shared/estado-badge';
 import { Modal } from '../../shared/modal';
 
-/** Insumos, alertas de stock mínimo, entradas/salidas y kárdex. */
 @Component({
   selector: 'app-inventario',
   imports: [DatePipe, DecimalPipe, FormsModule, EstadoBadge, Modal],
   templateUrl: './inventario.html',
 })
 export class Inventario implements OnInit {
+  /** ?pedido=ID permite registrar salidas directamente desde Producción. */
+  readonly pedido = input<string>();
+
   private readonly servicio = inject(InventarioService);
   private readonly notificador = inject(NotificadorService);
 
@@ -32,42 +34,26 @@ export class Inventario implements OnInit {
   protected movimiento: MovimientoRequest = { tipo: 'ENTRADA', cantidad: 1, motivo: '', idpedido: null };
   protected readonly kardex = signal<Movimiento[]>([]);
 
-  ngOnInit(): void {
-    this.cargar();
-  }
+  ngOnInit(): void { this.cargar(); }
 
   cargar(): void {
     this.cargando.set(true);
     this.servicio.listar().subscribe({
-      next: (l) => {
-        this.insumos.set(l);
-        this.cargando.set(false);
-      },
-      error: (err) => {
-        this.cargando.set(false);
-        this.notificador.error(err, 'No se pudo cargar el inventario');
-      },
+      next: (l) => { this.insumos.set(l); this.cargando.set(false); },
+      error: (err) => { this.cargando.set(false); this.notificador.error(err, 'No se pudo cargar el inventario'); },
     });
   }
 
-  nuevo(): void {
-    this.editandoId = null;
-    this.form = this.vacio();
-    this.modal.set('form');
-  }
+  nuevo(): void { this.editandoId = null; this.form = this.vacio(); this.modal.set('form'); }
 
   editar(i: Insumo): void {
     this.editandoId = i.idinsumo;
-    this.form = {
-      codigo: i.codigo, nombre: i.nombre, unidadMedida: i.unidadMedida,
-      stockActual: i.stockActual, stockMinimo: i.stockMinimo, activo: i.activo,
-    };
+    this.form = { codigo: i.codigo, nombre: i.nombre, unidadMedida: i.unidadMedida, stockActual: i.stockActual, stockMinimo: i.stockMinimo, activo: i.activo };
     this.modal.set('form');
   }
 
   guardar(): void {
-    const peticion = this.editandoId ? this.servicio.guardar(this.form, this.editandoId) : this.servicio.guardar(this.form);
-    this.ejecutar(peticion, this.editandoId ? 'Insumo actualizado' : 'Insumo registrado');
+    this.ejecutar(this.editandoId ? this.servicio.guardar(this.form, this.editandoId) : this.servicio.guardar(this.form), this.editandoId ? 'Insumo actualizado' : 'Insumo registrado');
   }
 
   eliminar(i: Insumo): void {
@@ -77,7 +63,13 @@ export class Inventario implements OnInit {
 
   abrirMovimiento(i: Insumo, tipo: 'ENTRADA' | 'SALIDA'): void {
     this.seleccionado = i;
-    this.movimiento = { tipo, cantidad: 1, motivo: tipo === 'ENTRADA' ? 'Compra a proveedor' : 'Consumo en producción', idpedido: null };
+    const idpedido = Number(this.pedido());
+    this.movimiento = {
+      tipo,
+      cantidad: 1,
+      motivo: tipo === 'ENTRADA' ? 'Compra a proveedor' : 'Consumo en producción',
+      idpedido: idpedido > 0 ? idpedido : null,
+    };
     this.modal.set('movimiento');
   }
 
@@ -88,32 +80,14 @@ export class Inventario implements OnInit {
   }
 
   verKardex(i: Insumo): void {
-    this.seleccionado = i;
-    this.kardex.set([]);
-    this.modal.set('kardex');
-    this.servicio.kardex(i.idinsumo).subscribe({
-      next: (l) => this.kardex.set(l),
-      error: (err) => this.notificador.error(err),
-    });
+    this.seleccionado = i; this.kardex.set([]); this.modal.set('kardex');
+    this.servicio.kardex(i.idinsumo).subscribe({ next: (l) => this.kardex.set(l), error: (err) => this.notificador.error(err) });
   }
 
   private ejecutar(peticion: Observable<unknown>, mensaje: string): void {
     this.trabajando.set(true);
-    peticion.subscribe({
-      next: () => {
-        this.trabajando.set(false);
-        this.modal.set(null);
-        this.notificador.ok(mensaje);
-        this.cargar();
-      },
-      error: (err) => {
-        this.trabajando.set(false);
-        this.notificador.error(err);
-      },
-    });
+    peticion.subscribe({ next: () => { this.trabajando.set(false); this.modal.set(null); this.notificador.ok(mensaje); this.cargar(); }, error: (err) => { this.trabajando.set(false); this.notificador.error(err); } });
   }
 
-  private vacio(): InsumoRequest {
-    return { codigo: '', nombre: '', unidadMedida: 'unidad', stockActual: 0, stockMinimo: 0, activo: true };
-  }
+  private vacio(): InsumoRequest { return { codigo: '', nombre: '', unidadMedida: 'unidad', stockActual: 0, stockMinimo: 0, activo: true }; }
 }
