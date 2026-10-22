@@ -1,0 +1,27 @@
+<div class="cabecera-pagina">
+  <div><span class="seccion-kicker">GESTIÓN COMERCIAL</span><h1>Clientes</h1><p class="texto-suave">Maestro de clientes para pedidos de mostrador, cotizaciones y seguimiento comercial.</p></div>
+  <div class="fila"><input class="buscador" type="search" placeholder="Buscar cliente..." [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" /><button type="button" class="btn btn-primario" (click)="nuevo()">＋ Nuevo cliente</button></div>
+</div>
+
+<div class="tarjeta sin-relleno"><div class="tabla-contenedor"><table class="tabla">
+  <thead><tr><th>ID</th><th>Cliente</th><th>Usuario</th><th>Correo</th><th>Estado</th><th>Acciones</th></tr></thead>
+  <tbody>
+    @if (cargando()) { <tr><td colspan="6" class="vacio">Cargando clientes…</td></tr> }
+    @else { @for (c of visibles(); track c.idusuario) {
+      <tr><td>#{{ c.idusuario }}</td><td><strong>{{ c.nombres }} {{ c.apellidos }}</strong></td><td>{{ c.nomusuario }}</td><td>{{ c.email }}</td><td>@if (c.activo) { <span class="badge badge-ok">Activo</span> } @else { <span class="badge badge-apagado">Inactivo</span> }</td><td class="nowrap"><button type="button" class="btn btn-secundario btn-pequeno" (click)="editar(c)">Editar</button> <button type="button" class="btn btn-peligro-suave btn-pequeno" (click)="eliminar(c)">Eliminar</button></td></tr>
+    } @empty { <tr><td colspan="6" class="vacio">No hay clientes registrados.</td></tr> } }
+  </tbody>
+</table></div></div>
+
+@if (modal()) {
+  <app-modal [titulo]="editandoId ? 'Editar cliente' : 'Nuevo cliente'" (cerrar)="modal.set(false)">
+    <form (ngSubmit)="guardar()" #f="ngForm">
+      <div class="rejilla-2"><label class="campo"><span>Nombres</span><input name="nombres" required [(ngModel)]="form.nombres" /></label><label class="campo"><span>Apellidos / Razón social</span><input name="apellidos" required [(ngModel)]="form.apellidos" /></label></div>
+      <div class="rejilla-2"><label class="campo"><span>Usuario</span><input name="nomusuario" required minlength="4" [(ngModel)]="form.nomusuario" /></label><label class="campo"><span>Correo</span><input type="email" name="email" required email [(ngModel)]="form.email" /></label></div>
+      <label class="campo"><span>{{ editandoId ? 'Nueva contraseña (opcional)' : 'Contraseña temporal' }}</span><input type="password" name="password" [required]="!editandoId" minlength="8" [(ngModel)]="form.password" /></label>
+      <label class="interruptor"><input type="checkbox" name="activo" [(ngModel)]="form.activo" /> Cliente activo</label>
+      <p class="texto-suave pequeno">El cliente podrá iniciar sesión en el portal externo y consultar únicamente sus pedidos, cotizaciones y diseños.</p>
+      <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(false)">Cancelar</button><button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar cliente</button></div>
+    </form>
+  </app-modal>
+}
