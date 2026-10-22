@@ -12,14 +12,13 @@ import { EstadoBadge } from '../../shared/estado-badge';
 import { EtiquetaPipe } from '../../shared/etiqueta.pipe';
 import { Modal } from '../../shared/modal';
 
-/** Ficha del pedido: avance, pagos, diseños y acciones según el rol y el estado. */
+/** Ficha interna del pedido: avance, pagos, diseños y acciones según estado. */
 @Component({
   selector: 'app-pedido-detalle',
   imports: [CurrencyPipe, DatePipe, FormsModule, RouterLink, EstadoBadge, EtiquetaPipe, Modal],
   templateUrl: './pedido-detalle.html',
 })
 export class PedidoDetalle implements OnInit {
-  /** Parámetro :id de la ruta (withComponentInputBinding). */
   readonly id = input.required<string>();
 
   protected readonly auth = inject(AuthService);
@@ -34,17 +33,15 @@ export class PedidoDetalle implements OnInit {
   protected readonly listaDisenos = signal<Diseno[]>([]);
   protected readonly trabajando = signal(false);
 
-  /** Recorrido normal del pedido para la barra de avance. */
-  protected readonly pasos: EstadoPedido[] = ESTADOS_PEDIDO.filter((e) => e !== 'CANCELADO' && e !== 'EN_DISENO');
+  /** Flujo completo del pedido definido por el proyecto SIGIP. */
+  protected readonly pasos: EstadoPedido[] = ESTADOS_PEDIDO.filter((e) => e !== 'CANCELADO');
   protected readonly indiceActual = computed(() => {
     const estado = this.pedido()?.estado;
-    if (estado === 'EN_DISENO') return this.pasos.indexOf('CONFIRMADO');
     return estado ? this.pasos.indexOf(estado) : -1;
   });
   protected readonly editable = computed(() => this.pedido()?.estado === 'REGISTRADO');
   protected readonly cancelable = computed(() => this.pedido()?.siguientesEstados.includes('CANCELADO') ?? false);
 
-  // Formularios
   protected readonly modal = signal<'pago' | 'editar' | 'estado' | 'verificar' | null>(null);
   protected pago = { monto: 0, metodo: 'YAPE' as MetodoPago, numeroOperacion: '' };
   protected edicion = { cantidad: 1, especificaciones: '' };
