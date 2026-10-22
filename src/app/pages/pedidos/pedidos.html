@@ -1,7 +1,56 @@
 <div class="cabecera-pagina">
-  <div><span class="seccion-kicker">GESTIÓN COMERCIAL</span><h1>Pedidos</h1><p class="texto-suave">Registro y seguimiento interno de los trabajos desde ventas hasta la entrega.</p></div>
-  <div class="fila"><select [(ngModel)]="filtro" (ngModelChange)="cargar()" aria-label="Filtrar por estado"><option value="">Todos los estados</option>@for (e of estados; track e) { <option [value]="e">{{ e | etiqueta }}</option> }</select><a class="btn btn-primario" routerLink="/catalogo">＋ Nuevo pedido</a></div>
+  <div>
+    <span class="seccion-kicker">ETAPA 2 · GESTIÓN COMERCIAL</span>
+    <h1>Pedidos y pagos</h1>
+    <p class="texto-suave">Registra y controla cada pedido antes de enviarlo a Diseño y Producción.</p>
+  </div>
+  <div class="fila">
+    <select [(ngModel)]="filtro" (ngModelChange)="cargar()" aria-label="Filtrar por estado">
+      <option value="">Todos los estados</option>
+      @for (e of estados; track e) { <option [value]="e">{{ e | etiqueta }}</option> }
+    </select>
+    <a class="btn btn-primario" routerLink="/catalogo">＋ Nuevo pedido</a>
+  </div>
 </div>
-<div class="tarjeta sin-relleno"><div class="tabla-contenedor"><table class="tabla"><thead><tr><th>N° Pedido</th><th>Cliente</th><th>Servicio</th><th class="num">Cant.</th><th class="num">Total</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead><tbody>
-@if (cargando()) { <tr><td colspan="8" class="vacio">Cargando…</td></tr> } @else { @for (p of pedidos(); track p.idpedido) { <tr><td><strong>#{{ p.idpedido }}</strong></td><td>{{ p.cliente }}</td><td>{{ p.nombreServicio }}</td><td class="num">{{ p.cantidad }}</td><td class="num">{{ p.total | currency: 'PEN' : 'S/' }}</td><td><app-estado [valor]="p.estado" /></td><td>{{ p.fechaPedido | date: 'dd/MM/yyyy' }}</td><td class="num"><a class="btn btn-secundario btn-pequeno" [routerLink]="['/pedidos', p.idpedido]">Ver detalle</a></td></tr> } @empty { <tr><td colspan="8" class="vacio">No hay pedidos registrados.</td></tr> } }
-</tbody></table></div></div>
+
+<section class="modulo-guia tarjeta">
+  <div class="modulo-guia-titulo"><span>2</span><div><strong>Qué debe ocurrir aquí</strong><small>Ventas convierte una solicitud en un pedido controlado.</small></div></div>
+  <div class="modulo-guia-pasos">
+    <div><b>1</b><span><strong>Seleccionar servicio</strong><small>Desde el catálogo interno.</small></span></div>
+    <div><b>2</b><span><strong>Registrar pedido</strong><small>Cantidad y especificaciones.</small></span></div>
+    <div><b>3</b><span><strong>Registrar y validar pago</strong><small>No continúa sin verificación.</small></span></div>
+    <div><b>4</b><span><strong>Derivar a diseño</strong><small>Cuando queda Confirmado.</small></span></div>
+  </div>
+</section>
+
+<div class="tarjeta sin-relleno tabla-pedidos-interna">
+  <div class="tabla-cabecera-interna">
+    <div><strong>Pedidos registrados</strong><small>Haz clic en “Ver flujo” para continuar el proceso del pedido.</small></div>
+    <span class="badge badge-info">{{ pedidos().length }} registros</span>
+  </div>
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead><tr><th>N° Pedido</th><th>Cliente</th><th>Servicio</th><th class="num">Cant.</th><th class="num">Total</th><th>Estado actual</th><th>Fecha</th><th>Continuar</th></tr></thead>
+      <tbody>
+        @if (cargando()) {
+          <tr><td colspan="8" class="vacio">Cargando…</td></tr>
+        } @else {
+          @for (p of pedidos(); track p.idpedido) {
+            <tr>
+              <td><strong>#{{ p.idpedido }}</strong></td>
+              <td>{{ p.cliente }}</td>
+              <td>{{ p.nombreServicio }}</td>
+              <td class="num">{{ p.cantidad }}</td>
+              <td class="num"><strong>{{ p.total | currency: 'PEN' : 'S/' }}</strong></td>
+              <td><app-estado [valor]="p.estado" /></td>
+              <td>{{ p.fechaPedido | date: 'dd/MM/yyyy' }}</td>
+              <td class="num"><a class="btn btn-primario btn-pequeno" [routerLink]="['/pedidos', p.idpedido]">Ver flujo →</a></td>
+            </tr>
+          } @empty {
+            <tr><td colspan="8" class="vacio">No hay pedidos registrados. Inicia desde el catálogo de servicios.</td></tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
