@@ -26,7 +26,8 @@
             ],
             "styles": [
               "src/styles.css",
-              "src/portal.css"
+              "src/portal.css",
+              "src/internal.css"
             ]
           },
           "configurations": {
