@@ -27,7 +27,8 @@
             "styles": [
               "src/styles.css",
               "src/portal.css",
-              "src/internal.css"
+              "src/internal.css",
+              "src/process.css"
             ]
           },
           "configurations": {
