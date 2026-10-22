@@ -18,11 +18,11 @@ interface GrupoMenu {
 
 const MENU: Opcion[] = [
   { ruta: '/dashboard', texto: 'Dashboard', icono: '⌂', roles: ['ADMIN', 'VENTAS'], grupo: 'GENERAL' },
-  { ruta: '/catalogo', texto: 'Catálogo de servicios', icono: '▣', roles: ['ADMIN', 'VENTAS'], grupo: 'COMERCIAL' },
-  { ruta: '/pedidos', texto: 'Pedidos y pagos', icono: '≡', roles: ['ADMIN', 'VENTAS', 'OPERACIONES'], grupo: 'COMERCIAL' },
-  { ruta: '/disenos', texto: 'Diseño', icono: '✎', roles: ['ADMIN', 'OPERACIONES'], grupo: 'OPERACIONES' },
-  { ruta: '/produccion', texto: 'Producción', icono: '⚙', roles: ['ADMIN', 'OPERACIONES'], grupo: 'OPERACIONES' },
-  { ruta: '/inventario', texto: 'Inventario', icono: '▤', roles: ['ADMIN', 'OPERACIONES'], grupo: 'OPERACIONES' },
+  { ruta: '/catalogo', texto: 'Catálogo de servicios', icono: '1', roles: ['ADMIN', 'VENTAS'], grupo: 'COMERCIAL' },
+  { ruta: '/pedidos', texto: 'Pedidos y pagos', icono: '2', roles: ['ADMIN', 'VENTAS', 'OPERACIONES'], grupo: 'COMERCIAL' },
+  { ruta: '/disenos', texto: 'Diseño y validación', icono: '3', roles: ['ADMIN', 'OPERACIONES'], grupo: 'OPERACIONES' },
+  { ruta: '/produccion', texto: 'Producción', icono: '4', roles: ['ADMIN', 'OPERACIONES'], grupo: 'OPERACIONES' },
+  { ruta: '/inventario', texto: 'Inventario', icono: '5', roles: ['ADMIN', 'OPERACIONES'], grupo: 'OPERACIONES' },
   { ruta: '/reportes', texto: 'Reportes', icono: '▥', roles: ['ADMIN'], grupo: 'GESTION' },
   { ruta: '/usuarios', texto: 'Usuarios y roles', icono: '◎', roles: ['ADMIN'], grupo: 'GESTION' },
   { ruta: '/notificaciones', texto: 'Notificaciones', icono: '✉', roles: ['ADMIN', 'VENTAS', 'OPERACIONES'], grupo: 'GESTION' },
@@ -40,9 +40,9 @@ export class Shell implements OnInit {
 
   protected readonly grupos: GrupoMenu[] = [
     { id: 'GENERAL', texto: 'GENERAL' },
-    { id: 'COMERCIAL', texto: 'COMERCIAL · VENTAS' },
-    { id: 'OPERACIONES', texto: 'OPERACIONES' },
-    { id: 'GESTION', texto: 'GESTIÓN' },
+    { id: 'COMERCIAL', texto: 'COMERCIAL · INICIO DEL FLUJO' },
+    { id: 'OPERACIONES', texto: 'OPERACIONES · CONTINUACIÓN' },
+    { id: 'GESTION', texto: 'SUPERVISIÓN Y CONTROL' },
   ];
 
   protected opcionesGrupo(grupo: Opcion['grupo']): Opcion[] {
