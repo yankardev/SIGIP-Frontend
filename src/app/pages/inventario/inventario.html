@@ -1,51 +1,58 @@
 <div class="cabecera-pagina">
   <div>
-    <h1>Inventario</h1>
-    <p class="texto-suave">
-      Insumos de la imprenta.
-      @if (criticos() > 0) { <span class="badge badge-peligro">{{ criticos() }} bajo el stock mínimo</span> }
-    </p>
+    <span class="seccion-kicker">ETAPA 5 · OPERACIONES</span>
+    <h1>Inventario y movimientos</h1>
+    <p class="texto-suave">Controla existencias y registra el consumo de materiales asociado a los trabajos de producción.</p>
   </div>
   <div class="fila">
-    <label class="interruptor">
-      <input type="checkbox" [ngModel]="soloBajoStock()" (ngModelChange)="soloBajoStock.set($event)" /> Solo bajo stock
-    </label>
-    <button type="button" class="btn btn-primario" (click)="nuevo()">Nuevo insumo</button>
+    <label class="interruptor"><input type="checkbox" [ngModel]="soloBajoStock()" (ngModelChange)="soloBajoStock.set($event)" /> Solo bajo stock</label>
+    <button type="button" class="btn btn-primario" (click)="nuevo()">＋ Nuevo insumo</button>
   </div>
 </div>
 
+<section class="modulo-guia tarjeta modulo-guia-inventario">
+  <div class="modulo-guia-titulo"><span>5</span><div><strong>Qué debe ocurrir aquí</strong><small>Los movimientos de materiales deben quedar registrados para mantener el stock y la trazabilidad.</small></div></div>
+  <div class="modulo-guia-pasos">
+    <div><b>1</b><span><strong>Consultar existencia</strong><small>Verificar stock antes de producir.</small></span></div>
+    <div><b>2</b><span><strong>Registrar salida</strong><small>Asociar el consumo al pedido cuando corresponda.</small></span></div>
+    <div><b>3</b><span><strong>Controlar mínimo</strong><small>Detectar insumos que requieren reposición.</small></span></div>
+    <div><b>4</b><span><strong>Revisar kárdex</strong><small>Consultar responsable, motivo y saldo.</small></span></div>
+  </div>
+</section>
+
+@if (criticos() > 0) {
+  <div class="alerta-inventario-operativa"><span>!</span><div><strong>{{ criticos() }} insumo(s) por debajo del stock mínimo</strong><small>Revisa estos materiales para evitar interrupciones en Producción.</small></div></div>
+}
+
 <div class="tarjeta sin-relleno">
+  <div class="tabla-cabecera-interna">
+    <div><strong>Existencias actuales</strong><small>Entradas y salidas actualizan automáticamente el saldo del insumo.</small></div>
+    <span class="badge" [class]="criticos() > 0 ? 'badge badge-peligro' : 'badge badge-ok'">{{ criticos() > 0 ? criticos() + ' alertas' : 'Stock controlado' }}</span>
+  </div>
   <div class="tabla-contenedor">
     <table class="tabla">
-      <thead>
-        <tr><th>Código</th><th>Insumo</th><th>Unidad</th><th class="num">Stock</th><th class="num">Mínimo</th><th>Estado</th><th></th></tr>
-      </thead>
+      <thead><tr><th>Código</th><th>Insumo</th><th>Unidad</th><th class="num">Stock actual</th><th class="num">Stock mínimo</th><th>Estado</th><th>Registrar movimiento / consultar</th></tr></thead>
       <tbody>
         @if (cargando()) {
           <tr><td colspan="7" class="vacio">Cargando…</td></tr>
         } @else {
           @for (i of visibles(); track i.idinsumo) {
             <tr [class.fila-alerta]="i.bajoStock">
-              <td>{{ i.codigo }}</td>
+              <td><strong>{{ i.codigo }}</strong></td>
               <td>{{ i.nombre }}</td>
               <td>{{ i.unidadMedida }}</td>
               <td class="num"><strong>{{ i.stockActual | number: '1.0-3' }}</strong></td>
               <td class="num">{{ i.stockMinimo | number: '1.0-3' }}</td>
-              <td>
-                @if (i.bajoStock) { <span class="badge badge-peligro">Reponer</span> }
-                @else if (!i.activo) { <span class="badge badge-apagado">Inactivo</span> }
-                @else { <span class="badge badge-ok">Normal</span> }
-              </td>
+              <td>@if (i.bajoStock) { <span class="badge badge-peligro">Stock bajo</span> } @else if (!i.activo) { <span class="badge badge-apagado">Inactivo</span> } @else { <span class="badge badge-ok">Disponible</span> }</td>
               <td class="num nowrap">
                 <button type="button" class="btn btn-secundario btn-pequeno" (click)="abrirMovimiento(i, 'ENTRADA')">+ Entrada</button>
-                <button type="button" class="btn btn-secundario btn-pequeno" (click)="abrirMovimiento(i, 'SALIDA')">− Salida</button>
+                <button type="button" class="btn btn-primario btn-pequeno" (click)="abrirMovimiento(i, 'SALIDA')">− Salida</button>
                 <button type="button" class="btn btn-secundario btn-pequeno" (click)="verKardex(i)">Kárdex</button>
                 <button type="button" class="btn btn-secundario btn-pequeno" (click)="editar(i)">Editar</button>
-                <button type="button" class="btn btn-peligro-suave btn-pequeno" (click)="eliminar(i)">Eliminar</button>
               </td>
             </tr>
           } @empty {
-            <tr><td colspan="7" class="vacio">No hay insumos.</td></tr>
+            <tr><td colspan="7" class="vacio">No hay insumos registrados.</td></tr>
           }
         }
       </tbody>
@@ -57,60 +64,28 @@
   @case ('form') {
     <app-modal [titulo]="editandoId ? 'Editar insumo' : 'Nuevo insumo'" (cerrar)="modal.set(null)">
       <form (ngSubmit)="guardar()" #f="ngForm">
-        <div class="rejilla-2">
-          <label class="campo"><span>Código</span><input name="codigo" required maxlength="30" [(ngModel)]="form.codigo" placeholder="PAP-A4-75" /></label>
-          <label class="campo"><span>Unidad de medida</span><input name="unidadMedida" required maxlength="30" [(ngModel)]="form.unidadMedida" /></label>
-        </div>
+        <div class="rejilla-2"><label class="campo"><span>Código</span><input name="codigo" required maxlength="30" [(ngModel)]="form.codigo" placeholder="PAP-A4-75" /></label><label class="campo"><span>Unidad de medida</span><input name="unidadMedida" required maxlength="30" [(ngModel)]="form.unidadMedida" /></label></div>
         <label class="campo"><span>Nombre</span><input name="nombre" required maxlength="150" [(ngModel)]="form.nombre" /></label>
-        <div class="rejilla-2">
-          <label class="campo"><span>Stock actual</span><input type="number" name="stockActual" min="0" step="any" required [(ngModel)]="form.stockActual" /></label>
-          <label class="campo"><span>Stock mínimo</span><input type="number" name="stockMinimo" min="0" step="any" required [(ngModel)]="form.stockMinimo" /></label>
-        </div>
+        <div class="rejilla-2"><label class="campo"><span>Stock actual</span><input type="number" name="stockActual" min="0" step="any" required [(ngModel)]="form.stockActual" /></label><label class="campo"><span>Stock mínimo</span><input type="number" name="stockMinimo" min="0" step="any" required [(ngModel)]="form.stockMinimo" /></label></div>
         <label class="interruptor"><input type="checkbox" name="activo" [(ngModel)]="form.activo" /> Activo</label>
-        <div class="acciones">
-          <button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button>
-          <button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar</button>
-        </div>
+        <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar</button></div>
       </form>
     </app-modal>
   }
   @case ('movimiento') {
-    <app-modal [titulo]="(movimiento.tipo === 'ENTRADA' ? 'Entrada de ' : 'Salida de ') + seleccionado?.nombre" (cerrar)="modal.set(null)">
+    <app-modal [titulo]="(movimiento.tipo === 'ENTRADA' ? 'Registrar entrada · ' : 'Registrar salida · ') + seleccionado?.nombre" (cerrar)="modal.set(null)">
       <form (ngSubmit)="registrarMovimiento()" #f="ngForm">
-        <p class="texto-suave">Stock actual: <strong>{{ seleccionado?.stockActual | number: '1.0-3' }} {{ seleccionado?.unidadMedida }}</strong></p>
-        <div class="rejilla-2">
-          <label class="campo"><span>Cantidad</span><input type="number" name="cantidad" min="0.001" step="any" required [(ngModel)]="movimiento.cantidad" /></label>
-          <label class="campo"><span>Pedido (opcional)</span><input type="number" name="idpedido" min="1" [(ngModel)]="movimiento.idpedido" /></label>
-        </div>
-        <label class="campo"><span>Motivo</span><input name="motivo" required maxlength="200" [(ngModel)]="movimiento.motivo" /></label>
-        <div class="acciones">
-          <button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button>
-          <button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Registrar</button>
-        </div>
+        <p class="resumen-stock-modal">Stock disponible: <strong>{{ seleccionado?.stockActual | number: '1.0-3' }} {{ seleccionado?.unidadMedida }}</strong></p>
+        <div class="rejilla-2"><label class="campo"><span>Cantidad</span><input type="number" name="cantidad" min="0.001" step="any" required [(ngModel)]="movimiento.cantidad" /></label><label class="campo"><span>Pedido relacionado (opcional)</span><input type="number" name="idpedido" min="1" [(ngModel)]="movimiento.idpedido" placeholder="Ej. 25" /></label></div>
+        <label class="campo"><span>Motivo del movimiento</span><input name="motivo" required maxlength="200" [(ngModel)]="movimiento.motivo" placeholder="Consumo de producción, reposición, ajuste..." /></label>
+        <p class="alerta alerta-flujo">Cuando la salida corresponde a un trabajo de impresión, indica el número de pedido para conservar la trazabilidad.</p>
+        <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Registrar movimiento</button></div>
       </form>
     </app-modal>
   }
   @case ('kardex') {
     <app-modal [titulo]="'Kárdex · ' + seleccionado?.codigo" (cerrar)="modal.set(null)">
-      <div class="tabla-contenedor">
-        <table class="tabla">
-          <thead><tr><th>Fecha</th><th>Tipo</th><th class="num">Cantidad</th><th class="num">Saldo</th><th>Motivo</th><th>Usuario</th></tr></thead>
-          <tbody>
-            @for (m of kardex(); track m.idmovimiento) {
-              <tr>
-                <td>{{ m.fecha | date: 'dd/MM/yy HH:mm' }}</td>
-                <td><app-estado [valor]="m.tipo" /></td>
-                <td class="num">{{ m.cantidad | number: '1.0-3' }}</td>
-                <td class="num">{{ m.stockResultante | number: '1.0-3' }}</td>
-                <td>{{ m.motivo }}@if (m.idpedido) { · pedido #{{ m.idpedido }} }</td>
-                <td>{{ m.usuario }}</td>
-              </tr>
-            } @empty {
-              <tr><td colspan="6" class="vacio">Sin movimientos registrados.</td></tr>
-            }
-          </tbody>
-        </table>
-      </div>
+      <div class="tabla-contenedor"><table class="tabla"><thead><tr><th>Fecha</th><th>Tipo</th><th class="num">Cantidad</th><th class="num">Saldo</th><th>Motivo / pedido</th><th>Responsable</th></tr></thead><tbody>@for (m of kardex(); track m.idmovimiento) { <tr><td>{{ m.fecha | date: 'dd/MM/yy HH:mm' }}</td><td><app-estado [valor]="m.tipo" /></td><td class="num">{{ m.cantidad | number: '1.0-3' }}</td><td class="num">{{ m.stockResultante | number: '1.0-3' }}</td><td>{{ m.motivo }}@if (m.idpedido) { · pedido #{{ m.idpedido }} }</td><td>{{ m.usuario }}</td></tr> } @empty { <tr><td colspan="6" class="vacio">Sin movimientos registrados.</td></tr> }</tbody></table></div>
     </app-modal>
   }
 }
