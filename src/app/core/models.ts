@@ -1,6 +1,6 @@
 // Contratos de la API de SIGIP (mismos nombres de campos que los DTO del backend).
 
-export type Rol = 'ADMIN' | 'CLIENTE';
+export type Rol = 'ADMIN' | 'VENTAS' | 'OPERACIONES' | 'CLIENTE';
 
 export interface Usuario {
   idusuario: number;
