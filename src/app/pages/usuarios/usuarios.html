@@ -1,15 +1,23 @@
 <div class="cabecera-pagina">
   <div>
-    <h1>Usuarios</h1>
-    <p class="texto-suave">Cuentas del sistema y sus roles (ADMIN, CLIENTE).</p>
+    <span class="seccion-kicker">ADMINISTRACIÓN Y SEGURIDAD</span>
+    <h1>Usuarios y roles</h1>
+    <p class="texto-suave">Administra las cuentas internas y limita el acceso según las responsabilidades de cada área.</p>
   </div>
-  <button type="button" class="btn btn-primario" (click)="nuevo()">Nuevo usuario</button>
+  <button type="button" class="btn btn-primario" (click)="nuevo()">＋ Nuevo usuario</button>
 </div>
 
+<section class="roles-resumen">
+  <article class="tarjeta rol-resumen"><span>ADMIN</span><div><strong>Administrador</strong><small>Supervisión general, usuarios, reportes y acceso completo.</small></div></article>
+  <article class="tarjeta rol-resumen"><span>VEN</span><div><strong>Ventas</strong><small>Catálogo, pedidos, pagos y seguimiento comercial.</small></div></article>
+  <article class="tarjeta rol-resumen"><span>OPE</span><div><strong>Operaciones</strong><small>Diseño, producción, inventario y seguimiento del trabajo.</small></div></article>
+</section>
+
 <div class="tarjeta sin-relleno">
+  <div class="tabla-cabecera-interna"><div><strong>Personal autorizado</strong><small>Los permisos se determinan mediante los roles asignados a cada cuenta.</small></div><span class="badge badge-info">{{ usuarios().length }} usuarios</span></div>
   <div class="tabla-contenedor">
     <table class="tabla">
-      <thead><tr><th>#</th><th>Usuario</th><th>Nombre</th><th>Correo</th><th>Roles</th><th>Estado</th><th></th></tr></thead>
+      <thead><tr><th>#</th><th>Usuario</th><th>Nombre</th><th>Correo</th><th>Roles</th><th>Estado</th><th>Acciones</th></tr></thead>
       <tbody>
         @for (u of usuarios(); track u.idusuario) {
           <tr>
@@ -17,21 +25,12 @@
             <td><strong>{{ u.nomusuario }}</strong></td>
             <td>{{ u.nombres }} {{ u.apellidos }}</td>
             <td>{{ u.email }}</td>
-            <td>
-              @for (r of u.roles; track r) {
-                <span class="badge" [class]="r === 'ADMIN' ? 'badge badge-info' : 'badge badge-neutro'">{{ r }}</span>
-              }
-            </td>
+            <td>@for (r of u.roles; track r) { <span class="badge" [class]="r === 'ADMIN' ? 'badge badge-info' : r === 'VENTAS' ? 'badge badge-ok' : r === 'OPERACIONES' ? 'badge badge-aviso' : 'badge badge-neutro'">{{ r }}</span> }</td>
             <td>@if (u.activo) { <span class="badge badge-ok">Activo</span> } @else { <span class="badge badge-apagado">Inactivo</span> }</td>
-            <td class="num nowrap">
-              <button type="button" class="btn btn-secundario btn-pequeno" (click)="editar(u)">Editar</button>
-              @if (u.nomusuario !== auth.usuario()?.nomusuario) {
-                <button type="button" class="btn btn-peligro-suave btn-pequeno" (click)="eliminar(u)">Eliminar</button>
-              }
-            </td>
+            <td class="num nowrap"><button type="button" class="btn btn-secundario btn-pequeno" (click)="editar(u)">Editar</button>@if (u.nomusuario !== auth.usuario()?.nomusuario) { <button type="button" class="btn btn-peligro-suave btn-pequeno" (click)="eliminar(u)">Eliminar</button> }</td>
           </tr>
         } @empty {
-          <tr><td colspan="7" class="vacio">No hay usuarios.</td></tr>
+          <tr><td colspan="7" class="vacio">No hay usuarios internos registrados.</td></tr>
         }
       </tbody>
     </table>
@@ -39,29 +38,22 @@
 </div>
 
 @if (modal()) {
-  <app-modal [titulo]="editandoId ? 'Editar usuario' : 'Nuevo usuario'" (cerrar)="modal.set(false)">
+  <app-modal [titulo]="editandoId ? 'Editar usuario interno' : 'Nuevo usuario interno'" (cerrar)="modal.set(false)">
     <form (ngSubmit)="guardar()" #f="ngForm">
-      <div class="rejilla-2">
-        <label class="campo"><span>Nombres</span><input name="nombres" required [(ngModel)]="form.nombres" /></label>
-        <label class="campo"><span>Apellidos</span><input name="apellidos" required [(ngModel)]="form.apellidos" /></label>
+      <div class="rejilla-2"><label class="campo"><span>Nombres</span><input name="nombres" required [(ngModel)]="form.nombres" /></label><label class="campo"><span>Apellidos</span><input name="apellidos" required [(ngModel)]="form.apellidos" /></label></div>
+      <div class="rejilla-2"><label class="campo"><span>Usuario</span><input name="nomusuario" required minlength="4" maxlength="50" [(ngModel)]="form.nomusuario" /></label><label class="campo"><span>Correo</span><input type="email" name="email" required email [(ngModel)]="form.email" /></label></div>
+      <label class="campo"><span>Contraseña {{ editandoId ? '(déjala vacía para conservar la actual)' : '' }}</span><input type="password" name="password" [required]="!editandoId" minlength="8" maxlength="100" [(ngModel)]="form.password" autocomplete="new-password" /></label>
+      <div class="roles-selector">
+        <strong>Rol de acceso</strong>
+        <small>Asigna únicamente las funciones que el trabajador necesita.</small>
+        <div class="opciones roles-opciones">
+          <label><input type="checkbox" name="admin" [(ngModel)]="form.admin" /> <span><b>Administrador</b><small>Acceso completo.</small></span></label>
+          <label><input type="checkbox" name="ventas" [(ngModel)]="form.ventas" /> <span><b>Ventas</b><small>Gestión comercial.</small></span></label>
+          <label><input type="checkbox" name="operaciones" [(ngModel)]="form.operaciones" /> <span><b>Operaciones</b><small>Diseño, producción e inventario.</small></span></label>
+        </div>
       </div>
-      <div class="rejilla-2">
-        <label class="campo"><span>Usuario</span><input name="nomusuario" required minlength="4" maxlength="50" [(ngModel)]="form.nomusuario" /></label>
-        <label class="campo"><span>Correo</span><input type="email" name="email" required email [(ngModel)]="form.email" /></label>
-      </div>
-      <label class="campo">
-        <span>Contraseña {{ editandoId ? '(déjala vacía para no cambiarla)' : '' }}</span>
-        <input type="password" name="password" [required]="!editandoId" minlength="8" maxlength="100" [(ngModel)]="form.password" autocomplete="new-password" />
-      </label>
-      <div class="opciones">
-        <label><input type="checkbox" name="admin" [(ngModel)]="form.admin" /> ADMIN</label>
-        <label><input type="checkbox" name="cliente" [(ngModel)]="form.cliente" /> CLIENTE</label>
-        <label><input type="checkbox" name="activo" [(ngModel)]="form.activo" /> Activo</label>
-      </div>
-      <div class="acciones">
-        <button type="button" class="btn btn-secundario" (click)="modal.set(false)">Cancelar</button>
-        <button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar</button>
-      </div>
+      <label class="interruptor"><input type="checkbox" name="activo" [(ngModel)]="form.activo" /> Usuario activo</label>
+      <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(false)">Cancelar</button><button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar usuario</button></div>
     </form>
   </app-modal>
 }
