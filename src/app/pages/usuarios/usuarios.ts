@@ -7,7 +7,7 @@ import { UsuariosService } from '../../core/services/usuarios.service';
 import { NotificadorService } from '../../core/notificador.service';
 import { Modal } from '../../shared/modal';
 
-/** Administración de usuarios y roles (ADMIN). Las contraseñas se guardan con BCrypt en auth-service. */
+/** Administración de usuarios internos y roles. Las contraseñas se guardan con BCrypt en auth-service. */
 @Component({
   selector: 'app-usuarios',
   imports: [FormsModule, Modal],
@@ -24,9 +24,7 @@ export class Usuarios implements OnInit {
   protected editandoId: number | null = null;
   protected form = this.vacio();
 
-  ngOnInit(): void {
-    this.cargar();
-  }
+  ngOnInit(): void { this.cargar(); }
 
   cargar(): void {
     this.servicio.listar().subscribe({
@@ -44,8 +42,15 @@ export class Usuarios implements OnInit {
   editar(u: Usuario): void {
     this.editandoId = u.idusuario;
     this.form = {
-      nomusuario: u.nomusuario, email: u.email, password: '', nombres: u.nombres, apellidos: u.apellidos,
-      activo: u.activo, admin: u.roles.includes('ADMIN'), cliente: u.roles.includes('CLIENTE'),
+      nomusuario: u.nomusuario,
+      email: u.email,
+      password: '',
+      nombres: u.nombres,
+      apellidos: u.apellidos,
+      activo: u.activo,
+      admin: u.roles.includes('ADMIN'),
+      ventas: u.roles.includes('VENTAS'),
+      operaciones: u.roles.includes('OPERACIONES'),
     };
     this.modal.set(true);
   }
@@ -53,15 +58,17 @@ export class Usuarios implements OnInit {
   guardar(): void {
     const roles: Rol[] = [];
     if (this.form.admin) roles.push('ADMIN');
-    if (this.form.cliente) roles.push('CLIENTE');
+    if (this.form.ventas) roles.push('VENTAS');
+    if (this.form.operaciones) roles.push('OPERACIONES');
     if (roles.length === 0) {
-      this.notificador.error(null, 'Asigna al menos un rol');
+      this.notificador.error(null, 'Asigna al menos un rol interno');
       return;
     }
-    const { admin, cliente, ...datos } = this.form;
+
+    const { admin, ventas, operaciones, ...datos } = this.form;
     this.ejecutar(
       this.servicio.guardar({ ...datos, roles }, this.editandoId ?? undefined),
-      this.editandoId ? 'Usuario actualizado' : 'Usuario creado',
+      this.editandoId ? 'Usuario actualizado' : 'Usuario interno creado',
     );
   }
 
@@ -87,6 +94,16 @@ export class Usuarios implements OnInit {
   }
 
   private vacio() {
-    return { nomusuario: '', email: '', password: '', nombres: '', apellidos: '', activo: true, admin: false, cliente: true };
+    return {
+      nomusuario: '',
+      email: '',
+      password: '',
+      nombres: '',
+      apellidos: '',
+      activo: true,
+      admin: false,
+      ventas: true,
+      operaciones: false,
+    };
   }
 }
