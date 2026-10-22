@@ -1,93 +1,28 @@
-<section class="cliente-hero">
-  <div class="cliente-hero-copy">
-    <span class="cliente-eyebrow">SIGIP · PORTAL DE COMPRAS</span>
-    <h1>Servicios de impresión sin perder de vista tu pedido</h1>
-    <p>Consulta el catálogo, registra tu solicitud y sigue el proceso desde el pago y diseño hasta producción y entrega.</p>
-    <div class="cliente-hero-datos">
-      <span>✓ Catálogo actualizado</span>
-      <span>✓ Seguimiento por estados</span>
-      <span>✓ Diseños y aprobaciones</span>
-    </div>
-  </div>
-  <div class="cliente-hero-visual" aria-hidden="true">
-    <div class="muestra muestra-grande">🖨️<strong>Impresión</strong></div>
-    <div class="muestra">👕<strong>Personalizados</strong></div>
-    <div class="muestra">☕<strong>Merchandising</strong></div>
-    <div class="muestra">📄<strong>Gráfica</strong></div>
-  </div>
-</section>
-
-<section class="compra-pasos" aria-label="Proceso de compra">
-  <div><b>1</b><span><strong>Elige</strong><small>un servicio del catálogo</small></span></div>
-  <div><b>2</b><span><strong>Registra</strong><small>cantidad y especificaciones</small></span></div>
-  <div><b>3</b><span><strong>Coordina</strong><small>pago, diseño y producción</small></span></div>
-  <div><b>4</b><span><strong>Haz seguimiento</strong><small>hasta la entrega</small></span></div>
-</section>
-
 <div class="cabecera-pagina catalogo-cabecera">
-  <div>
-    <span class="seccion-kicker">CATÁLOGO</span>
-    <h1>Nuestros servicios</h1>
-    <p class="texto-suave">Encuentra la opción adecuada y registra tu pedido en pocos pasos.</p>
-  </div>
-  <input class="buscador" type="search" placeholder="Buscar servicio…" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" />
+  <div><span class="seccion-kicker">GESTIÓN COMERCIAL</span><h1>Catálogo de servicios</h1><p class="texto-suave">Consulta los servicios y precios registrados por la empresa para utilizarlos en nuevos pedidos.</p></div>
+  <input class="buscador" type="search" placeholder="Buscar servicio..." [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" />
 </div>
 
-<div class="chips chips-compras">
-  <button type="button" class="chip" [class.chip-activo]="categoriaSeleccionada() === null" (click)="categoriaSeleccionada.set(null)">Todos</button>
-  @for (c of categorias(); track c.idcategoria) {
-    <button type="button" class="chip" [class.chip-activo]="categoriaSeleccionada() === c.idcategoria" (click)="categoriaSeleccionada.set(c.idcategoria)">
-      {{ c.nombre }}
-    </button>
-  }
+<div class="chips chips-compras"><button type="button" class="chip" [class.chip-activo]="categoriaSeleccionada() === null" (click)="categoriaSeleccionada.set(null)">Todos</button>
+  @for (c of categorias(); track c.idcategoria) { <button type="button" class="chip" [class.chip-activo]="categoriaSeleccionada() === c.idcategoria" (click)="categoriaSeleccionada.set(c.idcategoria)">{{ c.nombre }}</button> }
 </div>
 
-@if (cargando()) {
-  <p class="texto-suave">Cargando catálogo…</p>
-} @else {
-  <div class="rejilla-tarjetas catalogo-compras">
+@if (cargando()) { <p class="texto-suave">Cargando catálogo…</p> } @else {
+  <div class="rejilla-tarjetas catalogo-interno">
     @for (s of visibles(); track s.idservicio) {
-      <article class="tarjeta servicio servicio-compra">
-        <div class="servicio-icono" aria-hidden="true">✦</div>
-        <span class="texto-suave pequeno servicio-categoria">{{ s.categoria }}</span>
-        <h3>{{ s.nombre }}</h3>
-        <p class="texto-suave">{{ s.descripcion }}</p>
-        <div class="servicio-pie">
-          <div>
-            <small class="texto-suave">Desde</small>
-            <div><strong class="precio">{{ s.precioBase | currency: 'PEN' : 'S/' }}</strong><small class="texto-suave"> / unidad</small></div>
-            @if (s.requiereCotizacion) {
-              <div><span class="badge badge-aviso">Requiere cotización</span></div>
-            }
-          </div>
-          <button type="button" class="btn btn-primario compra-btn" (click)="abrir(s)">Solicitar servicio</button>
-        </div>
+      <article class="tarjeta servicio servicio-interno"><div class="servicio-imagen"><span>▧</span><small>{{ s.categoria }}</small></div><span class="texto-suave pequeno">{{ s.categoria }}</span><h3>{{ s.nombre }}</h3><p class="texto-suave">{{ s.descripcion }}</p>
+        <div class="servicio-pie"><div><small class="texto-suave">Precio base</small><div><strong class="precio">{{ s.precioBase | currency: 'PEN' : 'S/' }}</strong><small class="texto-suave"> / unidad</small></div>@if (s.requiereCotizacion) { <div><span class="badge badge-aviso">Requiere cotización</span></div> }</div><button type="button" class="btn btn-primario" (click)="abrir(s)">Usar en pedido</button></div>
       </article>
-    } @empty {
-      <p class="vacio">No hay servicios que coincidan con la búsqueda.</p>
-    }
+    } @empty { <p class="vacio">No hay servicios que coincidan con la búsqueda.</p> }
   </div>
 }
 
 @if (elegido(); as s) {
-  <app-modal [titulo]="'Solicitar: ' + s.nombre" (cerrar)="elegido.set(null)">
-    <form (ngSubmit)="solicitar()">
-      <p class="modal-resumen">Estás registrando un pedido para <strong>{{ s.nombre }}</strong>. Podrás seguir su estado desde “Mis pedidos”.</p>
-      <label class="campo">
-        <span>Cantidad</span>
-        <input type="number" name="cantidad" min="1" max="100000" required [(ngModel)]="cantidad" />
-      </label>
-      <label class="campo">
-        <span>Especificaciones (tamaño, papel, colores, acabado…)</span>
-        <textarea name="especificaciones" rows="3" maxlength="1000" [(ngModel)]="especificaciones"></textarea>
-      </label>
-      <p class="total">Total estimado: <strong>{{ total() | currency: 'PEN' : 'S/' }}</strong></p>
-      <div class="acciones">
-        <button type="button" class="btn btn-secundario" (click)="elegido.set(null)">Cancelar</button>
-        <button class="btn btn-primario" [disabled]="guardando() || !cantidad || cantidad < 1">
-          {{ guardando() ? 'Registrando…' : 'Confirmar pedido' }}
-        </button>
-      </div>
-    </form>
-  </app-modal>
+  <app-modal [titulo]="'Nuevo pedido: ' + s.nombre" (cerrar)="elegido.set(null)"><form (ngSubmit)="solicitar()">
+    <p class="modal-resumen">Registra las especificaciones del trabajo para <strong>{{ s.nombre }}</strong>.</p>
+    <label class="campo"><span>Cantidad</span><input type="number" name="cantidad" min="1" max="100000" required [(ngModel)]="cantidad" /></label>
+    <label class="campo"><span>Especificaciones del trabajo</span><textarea name="especificaciones" rows="3" maxlength="1000" [(ngModel)]="especificaciones"></textarea></label>
+    <p class="total">Total estimado: <strong>{{ total() | currency: 'PEN' : 'S/' }}</strong></p>
+    <div class="acciones"><button type="button" class="btn btn-secundario" (click)="elegido.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="guardando() || !cantidad || cantidad < 1">{{ guardando() ? 'Registrando…' : 'Registrar pedido' }}</button></div>
+  </form></app-modal>
 }
