@@ -1,0 +1,32 @@
+<div class="cabecera-pagina">
+  <div><span class="seccion-kicker">{{ auth.esInterno() ? 'GESTIÓN COMERCIAL' : 'MI CUENTA' }}</span><h1>{{ auth.esInterno() ? 'Cotizaciones' : 'Mis cotizaciones' }}</h1><p class="texto-suave">{{ auth.esInterno() ? 'Atiende solicitudes especiales, fija el precio y conviértelas en pedidos cuando el cliente las acepte.' : 'Revisa los precios enviados por la imprenta y acepta la propuesta para generar tu pedido.' }}</p></div>
+  <select [(ngModel)]="filtro" (ngModelChange)="cargar()" aria-label="Filtrar por estado"><option value="">Todos los estados</option>@for (e of estados; track e) { <option [value]="e">{{ e | etiqueta }}</option> }</select>
+</div>
+
+<div class="tarjeta sin-relleno"><div class="tabla-contenedor"><table class="tabla">
+  <thead><tr><th>N°</th>@if (auth.esInterno()) { <th>Cliente</th> }<th>Servicio</th><th>Cant.</th><th>Precio unit.</th><th>Total</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>
+  <tbody>
+    @if (cargando()) { <tr><td colspan="9" class="vacio">Cargando cotizaciones…</td></tr> }
+    @else { @for (c of lista(); track c.idcotizacion) {
+      <tr><td><strong>#{{ c.idcotizacion }}</strong></td>@if (auth.esInterno()) { <td>{{ c.cliente }}</td> }<td><strong>{{ c.nombreServicio }}</strong>@if (c.especificaciones) { <div class="texto-suave pequeno">{{ c.especificaciones }}</div> }</td><td>{{ c.cantidad }}</td><td>{{ c.precioUnitario == null ? 'Pendiente' : (c.precioUnitario | currency:'PEN':'S/') }}</td><td><strong>{{ c.total == null ? '—' : (c.total | currency:'PEN':'S/') }}</strong></td><td><app-estado [valor]="c.estado" /></td><td>{{ c.fechaSolicitud | date:'dd/MM/yyyy' }}</td><td class="nowrap">
+        @if (auth.esInterno() && c.estado === 'SOLICITADA') { <button class="btn btn-primario btn-pequeno" type="button" (click)="abrirPrecio(c)">Cotizar</button> }
+        @if (!auth.esInterno() && c.estado === 'COTIZADA') { <button class="btn btn-primario btn-pequeno" type="button" (click)="decidir(c,true)">Aceptar</button> <button class="btn btn-secundario btn-pequeno" type="button" (click)="decidir(c,false)">Rechazar</button> }
+        @if (c.idpedido) { <a class="btn btn-secundario btn-pequeno" [routerLink]="['/pedidos', c.idpedido]">Ver pedido</a> }
+        @if (c.estado === 'SOLICITADA') { <button class="btn btn-peligro-suave btn-pequeno" type="button" (click)="eliminar(c)">Eliminar</button> }
+      </td></tr>
+    } @empty { <tr><td colspan="9" class="vacio">No hay cotizaciones registradas.</td></tr> } }
+  </tbody>
+</table></div></div>
+
+@if (modal() === 'precio') {
+  <app-modal [titulo]="'Cotizar solicitud #' + seleccionada?.idcotizacion" (cerrar)="modal.set(null)">
+    <form (ngSubmit)="guardarPrecio()" #f="ngForm">
+      <p><strong>{{ seleccionada?.nombreServicio }}</strong> · {{ seleccionada?.cantidad }} unidades</p>
+      <p class="texto-suave">{{ seleccionada?.especificaciones || 'Sin especificaciones adicionales' }}</p>
+      <label class="campo"><span>Precio unitario acordado (S/)</span><input type="number" name="precio" min="0.01" step="0.01" required [(ngModel)]="precioUnitario" /></label>
+      <label class="campo"><span>Condiciones / observación</span><textarea name="observacion" rows="3" maxlength="500" [(ngModel)]="observacion"></textarea></label>
+      <p class="total">Total propuesto: <strong>{{ (precioUnitario * (seleccionada?.cantidad || 0)) | currency:'PEN':'S/' }}</strong></p>
+      <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Enviar cotización</button></div>
+    </form>
+  </app-modal>
+}
