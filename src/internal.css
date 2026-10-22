@@ -1,0 +1,375 @@
+/* SIGIP - capa visual del sistema interno
+   Basada en la propuesta aprobada del informe: sidebar oscuro, topbar compacto,
+   tarjetas ejecutivas, tablas densas y jerarquia visual orientada a gestion. */
+
+:root {
+  --sigip-navy: #0b3558;
+  --sigip-navy-2: #0d426c;
+  --sigip-blue: #0d7bd8;
+  --sigip-blue-dark: #075fae;
+  --sigip-bg: #f4f7fb;
+  --sigip-card: #ffffff;
+  --sigip-border: #dfe7ef;
+  --sigip-text: #142d45;
+  --sigip-muted: #718497;
+  --sigip-green: #27a875;
+  --sigip-orange: #f0a23e;
+  --sigip-purple: #765ad8;
+  --sigip-red: #d95363;
+}
+
+/* --- Estructura general --- */
+body { background: var(--sigip-bg); color: var(--sigip-text); }
+.sigip-interno { min-height: 100vh; background: var(--sigip-bg); }
+.sigip-interno .admin-sidebar {
+  width: 212px;
+  min-width: 212px;
+  padding: 0;
+  background: linear-gradient(180deg, #0a3152 0%, #0b3b63 58%, #082c4a 100%);
+  border-right: 1px solid rgba(255,255,255,.06);
+  box-shadow: 3px 0 16px rgba(10,48,79,.10);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Importante: .shell ya es flex. No se debe volver a desplazar .principal. */
+.sigip-interno .principal {
+  margin-left: 0 !important;
+  width: calc(100% - 212px);
+  min-width: 0;
+  flex: 1;
+}
+
+.sigip-interno .admin-marca {
+  min-height: 84px;
+  padding: 18px 17px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+}
+.sigip-interno .admin-marca:hover { text-decoration: none; }
+.sigip-interno .marca-logo {
+  width: 35px;
+  height: 35px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--sigip-blue);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 19px;
+  box-shadow: 0 5px 15px rgba(0,0,0,.10);
+}
+.sigip-interno .marca-texto { display: flex; flex-direction: column; color: #fff; }
+.sigip-interno .marca-texto strong { font-size: 16px; letter-spacing: .2px; }
+.sigip-interno .marca-texto small {
+  margin-top: 3px;
+  color: #b9d0e2;
+  font-size: 8px;
+  line-height: 1.35;
+  font-weight: 500;
+}
+
+.sidebar-menu { padding: 9px 9px 14px; }
+.menu-grupo { margin: 8px 0 13px; }
+.menu-grupo-titulo {
+  padding: 0 10px 6px;
+  color: #79a2c1;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1.15px;
+}
+.sigip-interno .admin-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
+.sigip-interno .admin-sidebar nav a {
+  min-height: 35px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: #d2e1ec;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 10.5px;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+  transition: background .15s ease, color .15s ease, transform .15s ease;
+}
+.sigip-interno .admin-sidebar nav a:hover {
+  background: rgba(255,255,255,.07);
+  color: #fff;
+  text-decoration: none;
+}
+.sigip-interno .admin-sidebar nav a.activo {
+  background: linear-gradient(90deg, #0b7ddc, #138ae8);
+  color: #fff;
+  border-left-color: #7bd1ff;
+  box-shadow: 0 5px 12px rgba(0,97,185,.20);
+}
+.sigip-interno .admin-sidebar .icono {
+  width: 17px;
+  min-width: 17px;
+  text-align: center;
+  font-size: 12px;
+  opacity: .98;
+}
+.menu-texto { flex: 1; }
+.contador-menu {
+  min-width: 17px;
+  height: 17px;
+  border-radius: 999px;
+  background: #e94b66;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.sigip-interno .admin-pie {
+  margin-top: auto;
+  padding: 14px 16px 16px;
+  border-top: 1px solid rgba(255,255,255,.10);
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  color: #dbe9f3;
+}
+.estado-dot {
+  width: 7px;
+  height: 7px;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: #52d39d;
+  box-shadow: 0 0 0 4px rgba(82,211,157,.10);
+}
+.sigip-interno .admin-pie strong { display: block; font-size: 9.5px; }
+.sigip-interno .admin-pie small { display: block; margin-top: 2px; color: #84a9c4; font-size: 8px; line-height: 1.35; }
+
+/* --- Topbar --- */
+.sigip-interno .admin-topbar {
+  height: 58px;
+  min-height: 58px;
+  padding: 0 20px;
+  gap: 14px;
+  background: rgba(255,255,255,.98);
+  border-bottom: 1px solid #e2e9f0;
+  box-shadow: 0 2px 9px rgba(25,60,90,.035);
+}
+.busqueda-global {
+  width: min(360px, 42vw);
+  height: 34px;
+  border: 1px solid #d8e2eb;
+  background: #f8fafc;
+  border-radius: 6px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #7f95a8;
+}
+.busqueda-global input {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 10px;
+  color: var(--sigip-text);
+}
+.busqueda-global input:focus { outline: 0; border: 0; }
+.sigip-interno .campana { font-size: 16px; color: #647d91; }
+.perfil-interno { display: flex !important; align-items: center; gap: 8px; text-align: left; }
+.avatar-interno {
+  width: 31px;
+  height: 31px;
+  border-radius: 50%;
+  background: #0c6fae;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 8.5px;
+  font-weight: 800;
+}
+.perfil-datos { display: flex; flex-direction: column; line-height: 1.15; }
+.perfil-datos strong { max-width: 145px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 9px; color: #17334a; }
+.perfil-datos small { margin-top: 3px; font-size: 8px; color: #8a9aaa; }
+.salir-interno { padding: 7px 11px; font-size: 9.5px; border-radius: 6px; }
+
+/* --- Contenido --- */
+.sigip-interno .admin-contenido {
+  width: 100%;
+  max-width: none;
+  padding: 24px 27px 42px;
+}
+.sigip-interno .cabecera-pagina {
+  align-items: center;
+  margin-bottom: 16px;
+}
+.sigip-interno .cabecera-pagina h1 {
+  margin: 3px 0 2px;
+  color: #102c46;
+  font-size: 21px;
+  letter-spacing: -.25px;
+}
+.sigip-interno .cabecera-pagina p { margin: 0; font-size: 10.5px; color: #718496; }
+.seccion-kicker {
+  display: block;
+  color: #1577bd;
+  font-size: 8px;
+  letter-spacing: 1.15px;
+  font-weight: 800;
+}
+.actualizado { display: block; margin-top: 7px; color: #8a9bab; font-size: 8.5px; }
+.sigip-interno .tarjeta {
+  border: 1px solid #dfe7ef;
+  border-radius: 8px;
+  box-shadow: 0 3px 12px rgba(29,64,93,.045);
+}
+.sigip-interno .btn { border-radius: 6px; font-size: 9.5px; padding: 7px 11px; }
+.sigip-interno input,
+.sigip-interno select,
+.sigip-interno textarea { border-radius: 6px; font-size: 10px; }
+
+/* --- KPI generales --- */
+.sigip-interno .kpis { gap: 13px; margin-bottom: 14px; }
+.sigip-interno .kpi { min-height: 104px; padding: 15px 16px; gap: 3px; position: relative; }
+.sigip-interno .kpi > span.texto-suave { font-size: 9px; padding-right: 34px; }
+.sigip-interno .kpi strong { margin-top: 7px; font-size: 22px; line-height: 1.05; color: #112d45; }
+.sigip-interno .kpi small { margin-top: 7px; color: #8a9bac; font-size: 8px; }
+
+/* --- Dashboard --- */
+.kpis-internos { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.kpis-internos .kpi { border-top: 3px solid #1680dc; text-decoration: none; }
+.kpis-internos .kpi-verde { border-top-color: #29aa78; }
+.kpis-internos .kpi-naranja { border-top-color: #efa03c; }
+.kpis-internos .kpi-morado { border-top-color: #785bd9; }
+.kpi-icono {
+  position: absolute;
+  right: 13px;
+  top: 13px;
+  width: 27px;
+  height: 27px;
+  border-radius: 6px;
+  background: #e9f3ff;
+  color: #167ad0;
+  display: grid;
+  place-items: center;
+  font-size: 9px;
+  font-weight: 800;
+}
+.kpi-verde .kpi-icono { background: #e7f7f0; color: #239b70; }
+.kpi-naranja .kpi-icono { background: #fff2e2; color: #d8882b; }
+.kpi-morado .kpi-icono { background: #f0ebff; color: #7152d0; }
+.dashboard-paneles { gap: 14px; }
+.panel-titulo { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.panel-titulo h2 { margin: 0 0 3px; font-size: 13px; color: #18344b; }
+.panel-titulo p { margin: 0; font-size: 9px; }
+.panel-titulo a { white-space: nowrap; font-size: 8.5px; font-weight: 700; color: #0873c6; }
+
+/* --- Reportes --- */
+.reporte-kpis { grid-template-columns: repeat(4, minmax(0,1fr)); }
+.reporte-kpi { border-top: 3px solid #137fda !important; text-decoration: none; color: inherit; }
+.reporte-kpi:hover { text-decoration: none; border-color: #c7d9e8; transform: translateY(-1px); }
+.kpi-ventas { border-top-color: #2bac79 !important; }
+.kpi-pendientes { border-top-color: #efa03c !important; }
+.kpi-taller { border-top-color: #7559d7 !important; }
+.kpi-icono-reporte {
+  position: absolute;
+  right: 13px;
+  top: 13px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: #eaf4ff;
+  color: #1179cb;
+  font-size: 9px;
+  font-weight: 800;
+}
+.kpi-ventas .kpi-icono-reporte { background: #e7f7ef; color: #249d70; }
+.kpi-pendientes .kpi-icono-reporte { background: #fff2e2; color: #d5892f; }
+.kpi-taller .kpi-icono-reporte { background: #f0ecff; color: #6f54cf; }
+.reporte-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 14px; align-items: start; }
+.reporte-panel { padding: 16px 17px; min-height: 252px; }
+.reporte-estados { display: flex; flex-direction: column; gap: 8px; }
+.estado-linea { display: grid; grid-template-columns: 118px minmax(90px,1fr) 25px; gap: 9px; align-items: center; font-size: 9.5px; }
+.estado-linea > span { color: #364e62; }
+.estado-linea .barra-pista { height: 8px; background: #eef2f6; border-radius: 999px; overflow: hidden; }
+.estado-linea .barra { display: block; height: 100%; min-width: 0; border-radius: 999px; background: linear-gradient(90deg,#0f79d1,#278fe6); }
+.estado-linea strong { text-align: right; font-size: 9px; color: #18344a; }
+.alertas-inventario { display: flex; flex-direction: column; gap: 9px; }
+.alerta-stock { display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; align-items: center; padding: 10px; border: 1px solid #edf0f4; border-radius: 7px; background: #fbfcfd; }
+.alerta-stock-icono { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 6px; background: #fff0e5; color: #d8872b; font-weight: 800; }
+.alerta-stock strong { display: block; font-size: 9.5px; color: #233f55; }
+.alerta-stock small { display: block; margin-top: 2px; color: #8495a4; font-size: 8px; }
+.estado-vacio-ok { min-height: 168px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: #7690a4; }
+.estado-vacio-ok > span { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: #e8f7f0; color: #2aa275; font-size: 17px; font-weight: 900; }
+.estado-vacio-ok strong { margin-top: 9px; color: #365167; font-size: 10.5px; }
+.estado-vacio-ok small { max-width: 230px; margin-top: 4px; font-size: 8.5px; line-height: 1.45; }
+.estado-carga { color: #718597; font-size: 10px; }
+.estado-error-reporte { display: flex; align-items: center; gap: 14px; }
+.estado-error-reporte > span { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: #fff0e5; color: #d8872b; font-weight: 800; }
+.estado-error-reporte > div { flex: 1; }
+.estado-error-reporte h2 { margin: 0 0 3px; }
+
+/* --- Catálogo interno --- */
+.catalogo-cabecera .buscador { width: 250px; height: 34px; }
+.chips-compras { gap: 6px; margin-bottom: 14px; }
+.chips-compras .chip { padding: 5px 10px; border-radius: 6px; font-size: 9px; }
+.catalogo-interno { grid-template-columns: repeat(4, minmax(0,1fr)); gap: 13px; }
+.servicio-interno { padding: 0 !important; overflow: hidden; }
+.servicio-imagen { height: 92px; margin-bottom: 12px; background: linear-gradient(135deg,#e7f1fa,#f7fafc); display: flex; align-items: center; justify-content: center; position: relative; color: #0b6dac; }
+.servicio-imagen > span { font-size: 29px; }
+.servicio-imagen small { position: absolute; left: 9px; bottom: 8px; padding: 3px 6px; border-radius: 4px; background: rgba(255,255,255,.92); color: #5c7487; font-size: 7.5px; }
+.servicio-interno > span,.servicio-interno > h3,.servicio-interno > p,.servicio-interno > .servicio-pie { margin-left: 13px; margin-right: 13px; }
+.servicio-interno h3 { font-size: 11.5px; color: #203b51; }
+.servicio-interno > p { font-size: 8.7px; line-height: 1.45; min-height: 38px; }
+.servicio-interno .servicio-pie { margin-bottom: 13px; align-items: flex-end; }
+.servicio-interno .precio { font-size: 15px; color: #12344c; }
+
+/* --- Tablas internas --- */
+.sigip-interno .sin-relleno { border-radius: 8px; }
+.sigip-interno .tabla th { padding: 9px 11px; font-size: 8px; letter-spacing: .04em; background: #f8fafc; color: #75899a; }
+.sigip-interno .tabla td { padding: 9px 11px; font-size: 9.5px; color: #385065; }
+.sigip-interno .tabla tbody tr:hover { background: #f7fbff; }
+.sigip-interno .badge { font-size: 8px; padding: 3px 7px; }
+
+/* --- Adaptacion responsive --- */
+@media (max-width: 1100px) {
+  .reporte-kpis,.kpis-internos { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .catalogo-interno { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .reporte-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 820px) {
+  .sigip-interno .admin-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 30;
+    transform: translateX(-100%);
+    transition: transform .2s ease;
+  }
+  .sigip-interno.menu-abierto .admin-sidebar { transform: translateX(0); }
+  .sigip-interno .principal { width: 100%; }
+  .sigip-interno .hamburguesa { display: inline-flex; }
+  .sigip-interno .velo { display: none; }
+  .sigip-interno.menu-abierto .velo { display: block; position: fixed; inset: 0; z-index: 20; background: rgba(7,35,58,.35); }
+  .busqueda-global { width: min(300px,48vw); }
+  .sigip-interno .admin-contenido { padding: 20px 16px 34px; }
+}
+
+@media (max-width: 620px) {
+  .busqueda-global { display: none; }
+  .perfil-datos { display: none; }
+  .salir-interno { display: none; }
+  .reporte-kpis,.kpis-internos,.catalogo-interno { grid-template-columns: 1fr; }
+  .sigip-interno .cabecera-pagina { align-items: flex-start; }
+  .estado-linea { grid-template-columns: 105px 1fr 22px; }
+}
