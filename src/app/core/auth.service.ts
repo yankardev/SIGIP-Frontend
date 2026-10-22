@@ -8,7 +8,6 @@ import { LoginResponse, Rol, Usuario, UsuarioRequest } from './models';
 const CLAVE_TOKEN = 'sigip.token';
 const CLAVE_USUARIO = 'sigip.usuario';
 
-/** Sesión del usuario: login JWT contra auth-service y datos guardados en el navegador. */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
@@ -20,6 +19,10 @@ export class AuthService {
   readonly usuario = this.usuarioActual.asReadonly();
   readonly autenticado = computed(() => this.usuarioActual() !== null && this.token() !== null);
   readonly esAdmin = computed(() => this.tieneRol('ADMIN'));
+  readonly esInterno = computed(() =>
+    this.tieneRol('ADMIN') || this.tieneRol('VENTAS') || this.tieneRol('OPERACIONES'),
+  );
+  readonly esCliente = computed(() => this.tieneRol('CLIENTE') && !this.esInterno());
 
   login(nomusuario: string, password: string): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.url}/login`, { nomusuario, password }).pipe(
@@ -51,7 +54,6 @@ export class AuthService {
     return this.usuarioActual()?.roles.includes(rol) ?? false;
   }
 
-  /** Lee la fecha de expiración (exp) del JWT sin validarlo: la firma la valida el backend. */
   private expirado(token: string): boolean {
     try {
       const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
