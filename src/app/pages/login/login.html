@@ -2,17 +2,17 @@
   <section class="acceso-brand" aria-label="SIGIP">
     <div class="acceso-brand-logo"><span>S</span><strong>SIGIP</strong></div>
     <p class="acceso-brand-sub">Sistema Integral de Gestión de Impresión y Pedidos</p>
-    <h2>Tu operación interna.<br />En un solo lugar.</h2>
-    <p>Centraliza clientes, pedidos, pagos, diseños, producción e inventario con accesos controlados según el rol del personal.</p>
+    <h2>Del pedido a la entrega.<br />Todo el proceso conectado.</h2>
+    <p>Clientes y personal de la imprenta trabajan sobre la misma información: cotización, pago, diseño, producción, inventario y entrega.</p>
     <div class="acceso-flujo">
-      <span>Ventas</span><i>→</i><span>Diseño</span><i>→</i><span>Producción</span><i>→</i><span>Entrega</span>
+      <span>Solicitud</span><i>→</i><span>Diseño</span><i>→</i><span>Producción</span><i>→</i><span>Entrega</span>
     </div>
   </section>
 
   <form class="tarjeta acceso-tarjeta acceso-form" [formGroup]="form" (ngSubmit)="ingresar()">
-    <span class="login-kicker">ACCESO INTERNO · SIGIP</span>
+    <span class="login-kicker">ACCESO SIGIP</span>
     <h1>Iniciar sesión</h1>
-    <p class="texto-suave login-intro">Ingresa con las credenciales asignadas por el administrador de la empresa.</p>
+    <p class="texto-suave login-intro">Ingresa como cliente o como personal autorizado de la empresa.</p>
     <label class="campo"><span>Usuario</span><input formControlName="nomusuario" autocomplete="username" placeholder="Ingresa tu usuario" />
       @if (form.controls.nomusuario.touched && form.controls.nomusuario.invalid) { <small class="error">El usuario es obligatorio</small> }
     </label>
@@ -21,6 +21,7 @@
     </label>
     @if (error()) { <p class="alerta alerta-error">{{ error() }}</p> }
     <button class="btn btn-primario btn-bloque login-btn" [disabled]="cargando()">{{ cargando() ? 'Ingresando…' : 'Ingresar al sistema' }}</button>
-    <p class="texto-suave centrado login-registro">Sistema de uso exclusivo para personal autorizado.</p>
+    <p class="texto-suave centrado login-registro">¿Eres cliente nuevo? <a routerLink="/registro">Crear cuenta y solicitar un trabajo</a></p>
+    <p class="texto-suave centrado pequeno">El personal interno utiliza las credenciales asignadas por el administrador.</p>
   </form>
 </div>
