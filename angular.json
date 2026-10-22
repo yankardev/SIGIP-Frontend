@@ -28,7 +28,8 @@
               "src/styles.css",
               "src/portal.css",
               "src/internal.css",
-              "src/process.css"
+              "src/process.css",
+              "src/roles.css"
             ]
           },
           "configurations": {
