@@ -1,63 +1,40 @@
 <div class="cabecera-pagina catalogo-cabecera">
-  <div>
-    <span class="seccion-kicker">ETAPA 1 · GESTIÓN COMERCIAL</span>
-    <h1>Catálogo de servicios</h1>
-    <p class="texto-suave">Selecciona el servicio solicitado para iniciar el registro de un nuevo pedido.</p>
-  </div>
+  <div><span class="seccion-kicker">{{ auth.esInterno() ? 'GESTIÓN COMERCIAL' : 'SERVICIOS DE IMPRESIÓN' }}</span><h1>{{ auth.esInterno() ? 'Registrar pedido o cotización' : '¿Qué necesitas imprimir?' }}</h1><p class="texto-suave">{{ auth.esInterno() ? 'Selecciona un cliente y un servicio para iniciar el proceso comercial.' : 'Elige un servicio. Si requiere evaluación especial, SIGIP enviará una solicitud de cotización.' }}</p></div>
   <input class="buscador" type="search" placeholder="Buscar servicio..." [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" />
 </div>
 
-<section class="modulo-guia tarjeta modulo-guia-catalogo">
-  <div class="modulo-guia-titulo"><span>1</span><div><strong>Inicio del proceso</strong><small>Ventas identifica la necesidad del cliente y selecciona el servicio que se utilizará en el pedido.</small></div></div>
-  <div class="guia-lineal"><span>Cliente / solicitud</span><i>→</i><span>Servicio y precio</span><i>→</i><span>Cantidad y especificaciones</span><i>→</i><span>Pedido registrado</span></div>
-</section>
+@if (auth.esInterno()) {
+  <section class="modulo-guia tarjeta"><div class="modulo-guia-titulo"><span>1</span><div><strong>Inicio del proceso comercial</strong><small>Cliente → servicio → pedido directo o cotización → pago → diseño → producción → entrega.</small></div></div></section>
+}
 
-<div class="catalogo-toolbar-interno">
-  <div class="chips chips-compras">
-    <button type="button" class="chip" [class.chip-activo]="categoriaSeleccionada() === null" (click)="categoriaSeleccionada.set(null)">Todos</button>
-    @for (c of categorias(); track c.idcategoria) {
-      <button type="button" class="chip" [class.chip-activo]="categoriaSeleccionada() === c.idcategoria" (click)="categoriaSeleccionada.set(c.idcategoria)">{{ c.nombre }}</button>
-    }
-  </div>
-  <small class="texto-suave">El precio base proviene del catálogo registrado en SIGIP.</small>
-</div>
+<div class="catalogo-toolbar-interno"><div class="chips chips-compras"><button type="button" class="chip" [class.chip-activo]="categoriaSeleccionada() === null" (click)="categoriaSeleccionada.set(null)">Todos</button>@for (c of categorias(); track c.idcategoria) { <button type="button" class="chip" [class.chip-activo]="categoriaSeleccionada() === c.idcategoria" (click)="categoriaSeleccionada.set(c.idcategoria)">{{ c.nombre }}</button> }</div></div>
 
-@if (cargando()) {
-  <p class="texto-suave">Cargando catálogo…</p>
-} @else {
+@if (cargando()) { <p class="texto-suave">Cargando catálogo…</p> } @else {
   <div class="rejilla-tarjetas catalogo-interno">
     @for (s of visibles(); track s.idservicio) {
-      <article class="tarjeta servicio servicio-interno">
-        <div class="servicio-imagen"><span>▧</span><small>{{ s.categoria }}</small></div>
-        <span class="texto-suave pequeno">{{ s.categoria }}</span>
-        <h3>{{ s.nombre }}</h3>
-        <p class="texto-suave">{{ s.descripcion }}</p>
-        <div class="servicio-pie">
-          <div>
-            <small class="texto-suave">Precio base</small>
-            <div><strong class="precio">{{ s.precioBase | currency: 'PEN' : 'S/' }}</strong><small class="texto-suave"> / unidad</small></div>
-            @if (s.requiereCotizacion) { <div><span class="badge badge-aviso">Requiere cotización</span></div> }
-          </div>
-          <button type="button" class="btn btn-primario" (click)="abrir(s)">Crear pedido →</button>
-        </div>
+      <article class="tarjeta servicio servicio-interno"><div class="servicio-imagen"><span>▧</span><small>{{ s.categoria }}</small></div><span class="texto-suave pequeno">{{ s.categoria }}</span><h3>{{ s.nombre }}</h3><p class="texto-suave">{{ s.descripcion }}</p>
+        <div class="servicio-pie"><div><small class="texto-suave">{{ s.requiereCotizacion ? 'Precio referencial' : 'Precio base' }}</small><div><strong class="precio">{{ s.precioBase | currency:'PEN':'S/' }}</strong><small class="texto-suave"> / unidad</small></div>@if (s.requiereCotizacion) { <div><span class="badge badge-aviso">Evaluación comercial requerida</span></div> }</div><button type="button" class="btn btn-primario" (click)="abrir(s)">{{ s.requiereCotizacion ? 'Solicitar cotización' : (auth.esInterno() ? 'Registrar pedido' : 'Solicitar trabajo') }}</button></div>
       </article>
-    } @empty {
-      <p class="vacio">No hay servicios que coincidan con la búsqueda.</p>
-    }
+    } @empty { <p class="vacio">No hay servicios que coincidan con la búsqueda.</p> }
   </div>
 }
 
 @if (elegido(); as s) {
-  <app-modal [titulo]="'Registrar pedido · ' + s.nombre" (cerrar)="elegido.set(null)">
-    <form (ngSubmit)="solicitar()">
-      <div class="resumen-servicio-modal">
-        <span>Servicio</span><strong>{{ s.nombre }}</strong><small>{{ s.categoria }} · {{ s.precioBase | currency: 'PEN' : 'S/' }} por unidad</small>
-      </div>
-      <label class="campo"><span>Cantidad</span><input type="number" name="cantidad" min="1" max="100000" required [(ngModel)]="cantidad" /></label>
-      <label class="campo"><span>Especificaciones del trabajo</span><textarea name="especificaciones" rows="3" maxlength="1000" [(ngModel)]="especificaciones" placeholder="Medidas, colores, material, acabado, fecha requerida..."></textarea></label>
-      <div class="total-pedido-modal"><span>Total estimado</span><strong>{{ total() | currency: 'PEN' : 'S/' }}</strong></div>
-      <p class="alerta alerta-flujo">Después de registrar el pedido, continúa con el registro y verificación del pago desde el detalle del pedido.</p>
-      <div class="acciones"><button type="button" class="btn btn-secundario" (click)="elegido.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="guardando() || !cantidad || cantidad < 1">{{ guardando() ? 'Registrando…' : 'Registrar y continuar →' }}</button></div>
+  <app-modal [titulo]="(s.requiereCotizacion ? 'Solicitar cotización · ' : 'Registrar pedido · ') + s.nombre" (cerrar)="elegido.set(null)">
+    <form (ngSubmit)="solicitar()" #f="ngForm">
+      @if (auth.esInterno()) {
+        <label class="campo"><span>Cliente *</span><select name="cliente" required [(ngModel)]="cliente"><option value="">Seleccionar cliente</option>@for (c of clientes(); track c.idusuario) { <option [value]="c.nomusuario">{{ c.nombres }} {{ c.apellidos }} · {{ c.email }}</option> }</select></label>
+        @if (clientes().length === 0) { <p class="alerta alerta-aviso">No hay clientes activos. Registra uno desde el módulo Clientes.</p> }
+      }
+      <div class="resumen-servicio-modal"><span>Servicio</span><strong>{{ s.nombre }}</strong><small>{{ s.categoria }}</small></div>
+      <label class="campo"><span>Cantidad *</span><input type="number" name="cantidad" min="1" max="100000" required [(ngModel)]="cantidad" /></label>
+      <label class="campo"><span>Especificaciones del trabajo *</span><textarea name="especificaciones" rows="4" maxlength="1000" required [(ngModel)]="especificaciones" placeholder="Medidas, colores, material, acabado, fecha requerida, archivo de referencia..."></textarea></label>
+      @if (s.requiereCotizacion) {
+        <p class="alerta alerta-flujo">El área comercial revisará las especificaciones y enviará el precio final. Al aceptar la cotización se generará automáticamente el pedido.</p>
+      } @else {
+        <div class="total-pedido-modal"><span>Total</span><strong>{{ total() | currency:'PEN':'S/' }}</strong></div><p class="alerta alerta-flujo">Después de registrar el pedido, el siguiente paso es registrar el pago para que pueda pasar a diseño.</p>
+      }
+      <div class="acciones"><button type="button" class="btn btn-secundario" (click)="elegido.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="guardando() || f.invalid">{{ guardando() ? 'Procesando…' : (s.requiereCotizacion ? 'Enviar solicitud' : 'Registrar y continuar') }}</button></div>
     </form>
   </app-modal>
 }
