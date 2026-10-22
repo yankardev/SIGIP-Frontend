@@ -9,7 +9,7 @@ import { VentasService } from '../../core/services/ventas.service';
 import { NotificadorService } from '../../core/notificador.service';
 import { Modal } from '../../shared/modal';
 
-/** Catálogo de servicios activos; desde aquí el cliente registra su pedido. */
+/** Catálogo interno de servicios; Ventas lo utiliza para registrar pedidos. */
 @Component({
   selector: 'app-catalogo',
   imports: [CurrencyPipe, FormsModule, Modal],
@@ -77,7 +77,7 @@ export class Catalogo implements OnInit {
         next: (pedido) => {
           this.guardando.set(false);
           this.elegido.set(null);
-          this.notificador.ok(`Pedido #${pedido.idpedido} registrado. Ahora registra tu pago.`);
+          this.notificador.ok(`Pedido #${pedido.idpedido} registrado correctamente.`);
           this.router.navigate(['/pedidos', pedido.idpedido]);
         },
         error: (err) => {
