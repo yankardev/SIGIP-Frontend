@@ -159,3 +159,46 @@
   .catalogo-cabecera .buscador { min-width: 100%; width: 100%; }
   .acceso-form { padding: 28px 22px; }
 }
+
+
+/* SIGIP 2026 · interfaz interna basada en el modelo aprobado del informe */
+.sigip-interno{background:#f4f7fb}
+.sigip-interno .admin-sidebar{background:linear-gradient(180deg,#092b4b 0%,#07385f 55%,#062944 100%);width:248px;box-shadow:4px 0 18px rgba(4,34,60,.12)}
+.sigip-interno .admin-marca{padding:24px 20px 22px;border-bottom:1px solid rgba(255,255,255,.11);display:flex;gap:12px;align-items:flex-start}
+.sigip-interno .admin-marca .marca-logo{background:#fff;color:#0872c9;border-radius:8px;width:38px;height:38px;display:grid;place-items:center;font-size:21px;font-weight:900}
+.sigip-interno .admin-marca>span:last-child{font-size:19px;line-height:1.05;color:#fff}
+.sigip-interno .admin-marca small{display:block;margin-top:5px;color:#a9c3d8;font-size:9px;line-height:1.35;font-weight:500}
+.sigip-interno .admin-seccion{color:#7ea4c0;font-size:9px;letter-spacing:1.5px;font-weight:800;padding:22px 20px 8px}
+.sigip-interno .admin-sidebar nav{padding:0 10px}
+.sigip-interno .admin-sidebar nav a{position:relative;color:#c5d8e7;border-radius:6px;padding:11px 12px;margin:3px 0;font-size:12px;display:flex;align-items:center;gap:11px;border-left:3px solid transparent}
+.sigip-interno .admin-sidebar nav a:hover{background:rgba(255,255,255,.07);color:#fff}
+.sigip-interno .admin-sidebar nav a.activo{background:#0879d9;color:#fff;border-left-color:#6ec7ff;box-shadow:0 5px 14px rgba(0,103,196,.22)}
+.sigip-interno .admin-sidebar .icono{width:18px;text-align:center;font-size:14px}
+.sigip-interno .admin-pie{color:#c4d8e7;border-top:1px solid rgba(255,255,255,.1);padding:17px 18px;margin-top:auto}
+.sigip-interno .admin-pie small{display:block;color:#7fa3be;margin-top:4px}
+.sigip-interno .principal{margin-left:248px;min-height:100vh}
+.sigip-interno .admin-topbar{height:68px;background:#fff;border-bottom:1px solid #e5ebf2;box-shadow:0 2px 8px rgba(19,55,87,.04);padding:0 26px}
+.busqueda-global{width:min(390px,40vw);height:36px;border:1px solid #dce5ee;background:#f8fafc;border-radius:6px;display:flex;align-items:center;gap:9px;padding:0 11px;color:#8aa0b2}
+.busqueda-global input{border:0;outline:0;background:transparent;width:100%;font-size:11px}
+.perfil-interno{display:flex!important;align-items:center;gap:9px}
+.perfil-interno>span:last-child{display:grid}
+.avatar-interno{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#0b6ead;color:#fff;font-size:10px;font-weight:800}
+.perfil-interno strong{font-size:10px;color:#18344c}.perfil-interno small{font-size:9px;color:#8093a3}
+.contador-menu{margin-left:auto;background:#e84461;color:#fff;border-radius:10px;min-width:18px;height:18px;display:grid;place-items:center;font-size:8px}
+.sigip-interno .admin-contenido{padding:28px 30px 45px;max-width:1500px}
+.seccion-kicker{font-size:9px;letter-spacing:1.2px;color:#0c75bd;font-weight:800}
+.dashboard-cabecera h1,.catalogo-cabecera h1{margin-top:5px}
+.kpis-internos{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.kpis-internos .kpi{position:relative;border-top:3px solid #1676d2;min-height:116px;text-decoration:none}
+.kpis-internos .kpi-verde{border-top-color:#23a876}.kpis-internos .kpi-naranja{border-top-color:#f09a35}.kpis-internos .kpi-morado{border-top-color:#7656d8}
+.kpi-icono{position:absolute;right:16px;top:15px;width:30px;height:30px;border-radius:7px;background:#e8f2ff;color:#1676d2;display:grid;place-items:center;font-size:11px;font-weight:800}
+.kpi-verde .kpi-icono{background:#e7f8f0;color:#239b70}.kpi-naranja .kpi-icono{background:#fff2e2;color:#dc892c}.kpi-morado .kpi-icono{background:#f0ebff;color:#7456d2}
+.kpis-internos .kpi strong{font-size:25px;color:#18344c;margin-top:8px}.kpis-internos .kpi small{font-size:9px;color:#8b9cab;margin-top:7px}
+.panel-titulo{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}.panel-titulo h2{margin:0 0 4px}.panel-titulo a{font-size:10px;color:#0b75c9;text-decoration:none;font-weight:700}
+.catalogo-interno{grid-template-columns:repeat(4,minmax(0,1fr))}
+.servicio-interno{padding:0;overflow:hidden}.servicio-interno>span,.servicio-interno>h3,.servicio-interno>p,.servicio-interno>.servicio-pie{margin-left:16px;margin-right:16px}
+.servicio-imagen{height:110px;background:linear-gradient(135deg,#e7f1fa,#f5f9fc);display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:15px;color:#0a6cb0}
+.servicio-imagen>span{font-size:36px}.servicio-imagen small{position:absolute;left:10px;bottom:9px;background:#fff;padding:4px 7px;border-radius:4px;color:#60788b}
+.servicio-interno .servicio-pie{margin-bottom:16px}
+@media(max-width:1050px){.catalogo-interno{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis-internos{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.sigip-interno .admin-sidebar{width:240px;transform:translateX(-100%);transition:.2s}.sigip-interno.menu-abierto .admin-sidebar{transform:translateX(0)}.sigip-interno .principal{margin-left:0}.busqueda-global{display:none}.sigip-interno .admin-contenido{padding:20px 14px}.catalogo-interno,.kpis-internos{grid-template-columns:1fr}.salir-interno{display:none}}
