@@ -102,6 +102,8 @@ export class PedidoDetalle implements OnInit {
       cantidad: this.edicion.cantidad,
       especificaciones: this.edicion.especificaciones,
       fechaEntrega: this.edicion.fechaEntrega ? `${this.edicion.fechaEntrega}T18:00:00` : null,
+      precioUnitarioAcordado: p.detallePrecio ? p.precioUnitario : null,
+      detallePrecio: p.detallePrecio,
     }), 'Pedido actualizado');
   }
 
