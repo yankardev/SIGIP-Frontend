@@ -45,9 +45,15 @@ export interface ClienteRequest {
 export interface Categoria { idcategoria: number; nombre: string; descripcion: string | null; activo: boolean; }
 export interface Servicio {
   idservicio: number; nombre: string; descripcion: string | null; precioBase: number; requiereCotizacion: boolean;
-  activo: boolean; idcategoria: number; categoria: string;
+  activo: boolean; idcategoria: number; categoria: string; personalizable: boolean; imagenUrl: string | null;
 }
-export interface ServicioRequest { nombre: string; descripcion: string; precioBase: number; requiereCotizacion: boolean; idcategoria: number; activo: boolean; }
+export interface ServicioRequest {
+  nombre: string; descripcion: string; precioBase: number; requiereCotizacion: boolean; idcategoria: number; activo: boolean;
+  personalizable?: boolean; imagenUrl?: string | null;
+}
+export interface ServicioOpcion {
+  idopcion: number; idservicio: number; grupo: string; nombre: string; incremento: number; orden: number;
+}
 
 export const ESTADOS_COTIZACION = ['BORRADOR', 'APROBADA', 'RECHAZADA', 'CONVERTIDA', 'VENCIDA'] as const;
 export type EstadoCotizacion = (typeof ESTADOS_COTIZACION)[number];
@@ -94,6 +100,7 @@ export interface Pedido {
   estado: EstadoPedido;
   siguientesEstados: EstadoPedido[];
   especificaciones: string | null;
+  detallePrecio: string | null;
   observacion: string | null;
   fechaPedido: string;
   fechaEntrega: string | null;
@@ -105,6 +112,8 @@ export interface PedidoRequest {
   cantidad: number;
   especificaciones: string;
   fechaEntrega: string | null;
+  precioUnitarioAcordado?: number | null;
+  detallePrecio?: string | null;
 }
 
 export const METODOS_PAGO = ['YAPE', 'PLIN', 'TRANSFERENCIA', 'EFECTIVO'] as const;
