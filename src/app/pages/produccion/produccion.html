@@ -1,8 +1,8 @@
 <div class="cabecera-pagina">
   <div>
-    <span class="seccion-kicker">ETAPA 4 · OPERACIONES</span>
+    <span class="seccion-kicker">PRODUCCIÓN</span>
     <h1>Producción</h1>
-    <p class="texto-suave">Controla la ejecución del trabajo, el responsable y el resultado del control de calidad.</p>
+    <p class="texto-suave">Organiza los trabajos del taller, asigna responsables y marca cuándo están terminados.</p>
   </div>
   <div class="fila">
     <select [(ngModel)]="filtro" (ngModelChange)="cargar()" aria-label="Filtrar por estado">
@@ -13,56 +13,49 @@
   </div>
 </div>
 
-<section class="modulo-guia tarjeta modulo-guia-produccion">
-  <div class="modulo-guia-titulo"><span>4</span><div><strong>Qué debe ocurrir aquí</strong><small>El trabajo se ejecuta y queda trazabilidad del responsable y del control de calidad.</small></div></div>
-  <div class="produccion-etapas">
-    <div><span>1</span><strong>Preparación</strong><small>Crear orden y asignar responsable.</small></div>
-    <i>→</i>
-    <div><span>2</span><strong>En proceso</strong><small>Iniciar la ejecución del trabajo.</small></div>
-    <i>→</i>
-    <div><span>3</span><strong>Control de calidad</strong><small>Aprobar u observar el resultado.</small></div>
-    <i>→</i>
-    <div><span>4</span><strong>Trabajo terminado</strong><small>El pedido queda listo para entrega.</small></div>
+<section class="tarjeta ayuda-simple">
+  <div>
+    <strong>Control del taller en una sola vista</strong>
+    <small>Prioriza, asigna responsable, inicia el trabajo y registra el resultado final.</small>
   </div>
+  <span>Menos consultas verbales</span>
 </section>
 
 <div class="tarjeta sin-relleno">
   <div class="tabla-cabecera-interna">
-    <div><strong>Órdenes de producción</strong><small>La prioridad y el estado indican qué trabajo necesita atención.</small></div>
+    <div><strong>Órdenes de producción</strong><small>Los trabajos pendientes aparecen aquí hasta quedar terminados.</small></div>
     <span class="badge badge-info">{{ ordenes().length }} órdenes</span>
   </div>
   <div class="tabla-contenedor">
-    <table class="tabla">
-      <thead><tr><th>Orden</th><th>Pedido</th><th>Trabajo</th><th>Prioridad</th><th>Etapa actual</th><th>Responsable</th><th class="num">Reprocesos</th><th>Registro</th><th>Siguiente acción</th></tr></thead>
+    <table class="tabla tabla-simple">
+      <thead><tr><th>Orden</th><th>Pedido / trabajo</th><th>Prioridad</th><th>Estado</th><th>Responsable</th><th>Registro</th><th></th></tr></thead>
       <tbody>
         @if (cargando()) {
-          <tr><td colspan="9" class="vacio">Cargando…</td></tr>
+          <tr><td colspan="7" class="vacio">Cargando producción…</td></tr>
         } @else {
           @for (o of ordenes(); track o.idorden) {
             <tr>
               <td><strong>#{{ o.idorden }}</strong></td>
-              <td><a [routerLink]="['/pedidos', o.idpedido]">Pedido #{{ o.idpedido }}</a></td>
-              <td>{{ o.descripcionTrabajo }}@if (o.observacion) { <div class="texto-suave pequeno">{{ o.observacion }}</div> }</td>
+              <td><a [routerLink]="['/pedidos', o.idpedido]"><strong>Pedido #{{ o.idpedido }}</strong></a><div>{{ o.descripcionTrabajo }}</div>@if (o.observacion) { <div class="texto-suave pequeno">{{ o.observacion }}</div> }</td>
               <td><app-estado [valor]="o.prioridad" /></td>
               <td><app-estado [valor]="o.estado" /></td>
               <td>{{ o.responsable || 'Sin asignar' }}</td>
-              <td class="num">{{ o.reprocesos }}</td>
               <td>{{ o.fechaRegistro | date: 'dd/MM HH:mm' }}</td>
               <td class="num nowrap">
                 @if (o.estado === 'PENDIENTE' || o.estado === 'OBSERVADA') {
-                  <button type="button" class="btn btn-primario btn-pequeno" [disabled]="trabajando()" (click)="iniciar(o)">Iniciar trabajo →</button>
+                  <button type="button" class="btn btn-primario btn-pequeno" [disabled]="trabajando()" (click)="iniciar(o)">Iniciar</button>
                 }
                 @if (o.estado === 'EN_PROCESO') {
-                  <button type="button" class="btn btn-primario btn-pequeno" (click)="abrirCalidad(o)">Control de calidad →</button>
+                  <button type="button" class="btn btn-primario btn-pequeno" (click)="abrirCalidad(o)">Finalizar / calidad</button>
                 }
                 @if (o.estado === 'TERMINADA') {
-                  <a class="btn btn-secundario btn-pequeno" [routerLink]="['/pedidos', o.idpedido]">Ir a entrega</a>
+                  <a class="btn btn-secundario btn-pequeno" [routerLink]="['/pedidos', o.idpedido]">Ver pedido</a>
                 }
                 @if (o.estado !== 'TERMINADA') { <button type="button" class="btn btn-secundario btn-pequeno" (click)="editar(o)">Editar</button> }
               </td>
             </tr>
           } @empty {
-            <tr><td colspan="9" class="vacio">No hay órdenes de producción. Crea una desde un pedido confirmado.</td></tr>
+            <tr><td colspan="7" class="vacio">No hay trabajos en producción.</td></tr>
           }
         }
       </tbody>
@@ -78,20 +71,20 @@
         <label class="campo"><span>Prioridad</span><select name="prioridad" [(ngModel)]="form.prioridad">@for (p of prioridades; track p) { <option [value]="p">{{ p | etiqueta }}</option> }</select></label>
       </div>
       <label class="campo"><span>Responsable</span><input name="responsable" maxlength="100" [(ngModel)]="form.responsable" placeholder="Nombre del responsable u operario" /></label>
-      <label class="campo"><span>Observación de producción</span><textarea name="observacion" rows="2" maxlength="500" [(ngModel)]="form.observacion"></textarea></label>
-      <p class="alerta alerta-flujo">El pedido debe tener el pago verificado y encontrarse listo para continuar con Operaciones.</p>
+      <label class="campo"><span>Observación</span><textarea name="observacion" rows="2" maxlength="500" [(ngModel)]="form.observacion" placeholder="Indicaciones necesarias para el taller"></textarea></label>
       <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar orden</button></div>
     </form>
   </app-modal>
 }
 
 @if (modal() === 'calidad') {
-  <app-modal [titulo]="'Control de calidad · orden #' + calidad.orden?.idorden" (cerrar)="modal.set(null)">
+  <app-modal [titulo]="'Finalizar trabajo · orden #' + calidad.orden?.idorden" (cerrar)="modal.set(null)">
+    <p class="texto-suave">Confirma si el trabajo quedó conforme o si necesita una corrección.</p>
     <div class="opciones opciones-calidad">
-      <label><input type="radio" name="aprobado" [value]="true" [(ngModel)]="calidad.aprobado" /> <span><strong>Aprobado</strong><small>El trabajo está conforme y puede finalizar.</small></span></label>
-      <label><input type="radio" name="aprobado" [value]="false" [(ngModel)]="calidad.aprobado" /> <span><strong>Observado</strong><small>El trabajo requiere corrección o reproceso.</small></span></label>
+      <label><input type="radio" name="aprobado" [value]="true" [(ngModel)]="calidad.aprobado" /> <span><strong>Terminado correctamente</strong><small>El pedido queda listo para entrega.</small></span></label>
+      <label><input type="radio" name="aprobado" [value]="false" [(ngModel)]="calidad.aprobado" /> <span><strong>Requiere corrección</strong><small>El trabajo vuelve a producción.</small></span></label>
     </div>
-    <label class="campo"><span>Observación del control</span><textarea name="observacion" rows="2" maxlength="500" [(ngModel)]="calidad.observacion"></textarea></label>
-    <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button><button type="button" class="btn btn-primario" [disabled]="trabajando()" (click)="registrarCalidad()">Registrar resultado</button></div>
+    <label class="campo"><span>Observación</span><textarea name="observacion" rows="2" maxlength="500" [(ngModel)]="calidad.observacion"></textarea></label>
+    <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button><button type="button" class="btn btn-primario" [disabled]="trabajando()" (click)="registrarCalidad()">Guardar resultado</button></div>
   </app-modal>
 }
