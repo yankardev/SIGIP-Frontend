@@ -1,50 +1,93 @@
 <div class="cabecera-pagina dashboard-cabecera">
-  <div><span class="seccion-kicker">CENTRO DE CONTROL DEL NEGOCIO</span><h1>Dashboard SIGIP</h1><p class="texto-suave">Visualiza qué ocurre desde que llega un cliente hasta que su trabajo es entregado.</p></div>
+  <div>
+    <span class="seccion-kicker">RESUMEN DEL NEGOCIO</span>
+    <h1>Dashboard</h1>
+    <p class="texto-suave">Lo importante del día en una sola pantalla.</p>
+  </div>
   <button type="button" class="btn btn-secundario" (click)="cargar()" [disabled]="cargando()">↻ Actualizar</button>
 </div>
 
-<section class="flujo-principal tarjeta">
-  <div class="flujo-principal-cabecera">
-    <div><span class="seccion-kicker">PROCESO DIGITALIZADO</span><h2>Así funciona la empresa dentro de SIGIP</h2><p class="texto-suave">Ventas inicia el trabajo; Operaciones lo transforma y controla; Ventas registra la entrega; Administración supervisa todo.</p></div>
-    <a class="btn btn-primario" routerLink="/pedidos">Trazabilidad de pedidos</a>
+<section class="tarjeta gestion-simple">
+  <div class="gestion-simple-cabecera">
+    <div>
+      <span class="seccion-kicker">PROCESO PRINCIPAL</span>
+      <h2>Del cliente a la entrega, sin pasos innecesarios</h2>
+      <p class="texto-suave">SIGIP concentra la información para evitar cuadernos, archivos separados y consultas repetidas.</p>
+    </div>
+    @if (esComercial()) { <a class="btn btn-primario" routerLink="/catalogo">＋ Nuevo pedido</a> }
   </div>
 
-  <div class="flujo-etapas flujo-etapas-completo">
-    <div class="flujo-etapa etapa-comercial"><span class="flujo-numero">1</span><strong>Cliente</strong><small>Registrar RUC/DNI, contacto y datos comerciales.</small></div><span class="flujo-flecha">→</span>
-    <div class="flujo-etapa etapa-comercial"><span class="flujo-numero">2</span><strong>Servicio</strong><small>Elegir producto, precio base y requerimientos.</small></div><span class="flujo-flecha">→</span>
-    <div class="flujo-etapa etapa-comercial"><span class="flujo-numero">3</span><strong>Cotización</strong><small>Cuando el precio es especial, acordarlo antes del pedido.</small></div><span class="flujo-flecha">→</span>
-    <div class="flujo-etapa etapa-comercial"><span class="flujo-numero">4</span><strong>Pedido + pago</strong><small>Crear trabajo, cobrar y verificar el pago.</small></div><span class="flujo-flecha">→</span>
-    <div class="flujo-etapa etapa-diseno"><span class="flujo-numero">5</span><strong>Diseño</strong><small>Versionar y aprobar el arte si el trabajo lo necesita.</small></div><span class="flujo-flecha">→</span>
-    <div class="flujo-etapa etapa-produccion"><span class="flujo-numero">6</span><strong>Producción</strong><small>Asignar responsable, ejecutar y controlar calidad.</small></div><span class="flujo-flecha">→</span>
-    <div class="flujo-etapa etapa-inventario"><span class="flujo-numero">7</span><strong>Inventario</strong><small>Registrar materiales consumidos y vigilar stock.</small></div><span class="flujo-flecha">→</span>
-    <div class="flujo-etapa etapa-entrega"><span class="flujo-numero">8</span><strong>Entrega</strong><small>Cerrar el pedido y conservar la trazabilidad.</small></div>
+  <div class="proceso-simple">
+    <a routerLink="/clientes" class="proceso-simple-item">
+      <span>1</span><div><strong>Cliente</strong><small>Registrar o buscar al cliente.</small></div>
+    </a>
+    <i>→</i>
+    <a routerLink="/pedidos" class="proceso-simple-item">
+      <span>2</span><div><strong>Pedido</strong><small>Servicio, cantidad, importe y fecha.</small></div>
+    </a>
+    <i>→</i>
+    <a routerLink="/produccion" class="proceso-simple-item">
+      <span>3</span><div><strong>Producción</strong><small>Responsable, ejecución y calidad.</small></div>
+    </a>
+    <i>→</i>
+    <a routerLink="/pedidos" class="proceso-simple-item">
+      <span>4</span><div><strong>Entrega</strong><small>Cerrar el trabajo y conservar el historial.</small></div>
+    </a>
   </div>
 
-  <div class="acciones dashboard-acciones-rol">
-    @if (esComercial()) {
-      <a class="btn btn-primario" routerLink="/clientes">Clientes</a>
-      <a class="btn btn-secundario" routerLink="/cotizaciones">Cotizaciones</a>
-      <a class="btn btn-secundario" routerLink="/pedidos">Pedidos y pagos</a>
-    }
-    @if (esOperativo()) {
-      <a class="btn btn-primario" routerLink="/disenos">Diseño</a>
-      <a class="btn btn-secundario" routerLink="/produccion">Producción</a>
-      <a class="btn btn-secundario" routerLink="/inventario">Inventario</a>
-    }
+  <div class="soporte-simple">
+    <span>Inventario acompaña la producción y controla materiales y stock.</span>
+    @if (esOperativo()) { <a routerLink="/inventario">Revisar inventario →</a> }
   </div>
 </section>
 
 @if (datos(); as d) {
   @for (aviso of d.avisos; track aviso) { <p class="alerta alerta-aviso">{{ aviso }}</p> }
-  <div class="kpis kpis-internos">
-    <a class="tarjeta kpi kpi-azul" routerLink="/pedidos"><span class="kpi-icono">▣</span><span class="texto-suave">Pedidos registrados</span><strong>{{ d.ventas?.totalPedidos ?? 0 | number }}</strong><small>Total gestionado en SIGIP</small></a>
-    <div class="tarjeta kpi kpi-verde"><span class="kpi-icono">S/</span><span class="texto-suave">Ventas confirmadas</span><strong>{{ (d.ventas?.ventasConfirmadas ?? 0) | currency: 'PEN' : 'S/' }}</strong><small>Pedidos con pago validado</small></div>
-    <a class="tarjeta kpi kpi-naranja" routerLink="/pedidos"><span class="kpi-icono">!</span><span class="texto-suave">Pedidos por atender</span><strong>{{ d.pedidosPorAtender | number }}</strong><small>Requieren acción</small></a>
-    <a class="tarjeta kpi kpi-morado" [routerLink]="esOperativo() ? '/produccion' : '/pedidos'"><span class="kpi-icono">⚙</span><span class="texto-suave">En taller</span><strong>{{ d.pedidosEnTaller | number }}</strong><small>Diseño o producción</small></a>
+
+  <div class="kpis kpis-internos kpis-simples">
+    <a class="tarjeta kpi kpi-azul" routerLink="/pedidos">
+      <span class="kpi-icono">▣</span><span class="texto-suave">Pedidos registrados</span>
+      <strong>{{ d.ventas?.totalPedidos ?? 0 | number }}</strong><small>Información centralizada</small>
+    </a>
+    <a class="tarjeta kpi kpi-morado" routerLink="/produccion">
+      <span class="kpi-icono">⚙</span><span class="texto-suave">En producción</span>
+      <strong>{{ d.pedidosEnTaller | number }}</strong><small>Trabajos dentro del taller</small>
+    </a>
+    <a class="tarjeta kpi kpi-naranja" routerLink="/pedidos">
+      <span class="kpi-icono">!</span><span class="texto-suave">Pendientes de atención</span>
+      <strong>{{ d.pedidosPorAtender | number }}</strong><small>Necesitan seguimiento</small>
+    </a>
+    <a class="tarjeta kpi kpi-verde" routerLink="/inventario">
+      <span class="kpi-icono">▦</span><span class="texto-suave">Alertas de stock</span>
+      <strong>{{ d.insumosBajoStock.length | number }}</strong><small>Materiales bajo mínimo</small>
+    </a>
   </div>
 
-  <div class="rejilla-2 alinear-arriba dashboard-paneles">
-    <section class="tarjeta"><div class="panel-titulo"><div><h2>Pedidos por estado</h2><p class="texto-suave">Ubicación real dentro del flujo.</p></div><a routerLink="/pedidos">Ver todos →</a></div><div class="barras">@for (b of porEstado(); track b.estado) { <div class="barra-fila"><span class="barra-etiqueta">{{ b.estado | etiqueta }}</span><span class="barra-pista"><span class="barra" [style.width.%]="b.ancho"></span></span><span class="barra-valor">{{ b.cantidad }}</span></div> }</div></section>
-    <section class="tarjeta"><div class="panel-titulo"><div><h2>Riesgo de materiales</h2><p class="texto-suave">Stock que puede afectar la producción.</p></div>@if (esOperativo()) { <a routerLink="/inventario">Gestionar →</a> }</div>@for (i of d.insumosBajoStock; track i.idinsumo) { <div class="item-lista"><div><strong>{{ i.codigo }}</strong> · {{ i.nombre }}</div><span class="badge badge-peligro">{{ i.stockActual | number:'1.0-3' }} / mín. {{ i.stockMinimo | number:'1.0-3' }}</span></div> } @empty { <div class="estado-ok-panel"><span>✓</span><strong>Inventario sin alertas</strong><small>Todos los insumos están sobre el mínimo.</small></div> }</section>
+  <div class="rejilla-2 dashboard-paneles dashboard-simple-paneles">
+    <section class="tarjeta acceso-rapido">
+      <div class="panel-titulo"><div><h2>Accesos rápidos</h2><p class="texto-suave">Las tareas que más se usan.</p></div></div>
+      <div class="accesos-grid">
+        @if (esComercial()) {
+          <a routerLink="/clientes"><span>◉</span><div><strong>Clientes</strong><small>Buscar o registrar</small></div></a>
+          <a routerLink="/catalogo"><span>＋</span><div><strong>Nuevo pedido</strong><small>Registrar un trabajo</small></div></a>
+          <a routerLink="/pedidos"><span>▣</span><div><strong>Pedidos</strong><small>Consultar y entregar</small></div></a>
+        }
+        @if (esOperativo()) {
+          <a routerLink="/produccion"><span>⚙</span><div><strong>Producción</strong><small>Trabajos del taller</small></div></a>
+          <a routerLink="/inventario"><span>▦</span><div><strong>Inventario</strong><small>Stock y movimientos</small></div></a>
+        }
+      </div>
+    </section>
+
+    <section class="tarjeta resumen-ejecutivo">
+      <div class="panel-titulo"><div><h2>Resumen de gestión</h2><p class="texto-suave">Datos para decidir sin revisar varios archivos.</p></div></div>
+      <div class="resumen-fila"><span>Ventas confirmadas</span><strong>{{ (d.ventas?.ventasConfirmadas ?? 0) | currency: 'PEN' : 'S/' }}</strong></div>
+      <div class="resumen-fila"><span>Pedidos por atender</span><strong>{{ d.pedidosPorAtender | number }}</strong></div>
+      <div class="resumen-fila"><span>Trabajos en taller</span><strong>{{ d.pedidosEnTaller | number }}</strong></div>
+      <div class="resumen-fila"><span>Insumos con alerta</span><strong>{{ d.insumosBajoStock.length | number }}</strong></div>
+      @if (auth.esAdmin()) { <a class="btn btn-secundario btn-ancho" routerLink="/reportes">Ver reportes</a> }
+    </section>
   </div>
-} @else if (cargando()) { <p class="texto-suave">Cargando tablero…</p> }
+} @else if (cargando()) {
+  <p class="texto-suave">Cargando tablero…</p>
+}
