@@ -1,0 +1,38 @@
+<div class="cabecera-pagina">
+  <div><span class="seccion-kicker">GESTIÓN COMERCIAL</span><h1>Clientes</h1><p class="texto-suave">Base comercial utilizada por cotizaciones, pedidos, pagos y seguimiento.</p></div>
+  <div class="fila"><input class="buscador" type="search" placeholder="Buscar por nombre, RUC/DNI, contacto..." [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" /><button type="button" class="btn btn-primario" (click)="nuevo()">＋ Nuevo cliente</button></div>
+</div>
+
+<div class="tarjeta sin-relleno">
+  <div class="tabla-contenedor"><table class="tabla">
+    <thead><tr><th>Documento</th><th>Razón social / nombre</th><th>Contacto</th><th>Teléfono</th><th>Correo</th><th>Estado</th><th>Acciones</th></tr></thead>
+    <tbody>
+      @if (cargando()) { <tr><td colspan="7" class="vacio">Cargando clientes…</td></tr> }
+      @else { @for (c of visibles(); track c.idcliente) {
+        <tr>
+          <td><strong>{{ c.tipoDocumento }}</strong> {{ c.numeroDocumento }}</td>
+          <td><strong>{{ c.razonSocial }}</strong><div class="texto-suave pequeno">{{ c.direccion || 'Sin dirección registrada' }}</div></td>
+          <td>{{ c.contacto || '—' }}</td><td>{{ c.telefono || '—' }}</td><td>{{ c.email || '—' }}</td>
+          <td>@if (c.activo) { <span class="badge badge-ok">Activo</span> } @else { <span class="badge badge-apagado">Inactivo</span> }</td>
+          <td class="num nowrap"><button class="btn btn-secundario btn-pequeno" (click)="editar(c)">Editar</button>@if (c.activo) { <button class="btn btn-peligro-suave btn-pequeno" (click)="desactivar(c)">Desactivar</button> }</td>
+        </tr>
+      } @empty { <tr><td colspan="7" class="vacio">No hay clientes registrados. Registra el primero para iniciar el flujo comercial.</td></tr> } }
+    </tbody>
+  </table></div>
+</div>
+
+@if (modal()) {
+  <app-modal [titulo]="editandoId ? 'Editar cliente' : 'Nuevo cliente'" (cerrar)="modal.set(false)">
+    <form (ngSubmit)="guardar()" #f="ngForm">
+      <div class="rejilla-2">
+        <label class="campo"><span>Tipo de documento</span><select name="tipoDocumento" [(ngModel)]="form.tipoDocumento"><option value="RUC">RUC</option><option value="DNI">DNI</option><option value="CE">CE</option></select></label>
+        <label class="campo"><span>Número</span><input name="numeroDocumento" required maxlength="20" [(ngModel)]="form.numeroDocumento" /></label>
+      </div>
+      <label class="campo"><span>Razón social / nombres</span><input name="razonSocial" required maxlength="180" [(ngModel)]="form.razonSocial" /></label>
+      <div class="rejilla-2"><label class="campo"><span>Persona de contacto</span><input name="contacto" [(ngModel)]="form.contacto" /></label><label class="campo"><span>Teléfono</span><input name="telefono" [(ngModel)]="form.telefono" /></label></div>
+      <div class="rejilla-2"><label class="campo"><span>Correo</span><input type="email" name="email" [(ngModel)]="form.email" /></label><label class="campo"><span>Dirección</span><input name="direccion" [(ngModel)]="form.direccion" /></label></div>
+      <label class="interruptor"><input type="checkbox" name="activo" [(ngModel)]="form.activo" /> Cliente activo</label>
+      <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(false)">Cancelar</button><button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar cliente</button></div>
+    </form>
+  </app-modal>
+}
