@@ -3,13 +3,18 @@ import { CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { Categoria, Cliente, Servicio } from '../../core/models';
+import { Categoria, Cliente, Servicio, ServicioOpcion } from '../../core/models';
 import { CatalogoService } from '../../core/services/catalogo.service';
 import { VentasService } from '../../core/services/ventas.service';
 import { NotificadorService } from '../../core/notificador.service';
 import { Modal } from '../../shared/modal';
 
-/** Catálogo interno: Ventas selecciona un cliente y convierte el servicio en pedido. */
+interface GrupoOpciones {
+  grupo: string;
+  opciones: ServicioOpcion[];
+}
+
+/** Nuevo pedido: precio fijo o cálculo rápido según opciones del servicio. */
 @Component({
   selector: 'app-catalogo',
   imports: [CurrencyPipe, FormsModule, Modal],
@@ -38,8 +43,11 @@ export class Catalogo implements OnInit {
   });
 
   protected readonly elegido = signal<Servicio | null>(null);
+  protected readonly opciones = signal<ServicioOpcion[]>([]);
+  protected readonly cargandoOpciones = signal(false);
+  protected selecciones: Record<string, number> = {};
   protected idcliente = 0;
-  protected cantidad = 100;
+  protected cantidad = 1;
   protected especificaciones = '';
   protected fechaEntrega = '';
   protected readonly guardando = signal(false);
@@ -66,7 +74,7 @@ export class Catalogo implements OnInit {
   abrir(servicio: Servicio): void {
     if (servicio.requiereCotizacion) {
       this.router.navigate(['/cotizaciones']);
-      this.notificador.ok('Este servicio requiere cotización. Registra primero la propuesta comercial.');
+      this.notificador.ok('Este trabajo requiere una cotización manual.');
       return;
     }
     if (this.clientes().length === 0) {
@@ -74,20 +82,92 @@ export class Catalogo implements OnInit {
       this.notificador.error(null, 'Registra al menos un cliente antes de crear un pedido');
       return;
     }
+
     this.idcliente = this.clientes()[0]?.idcliente ?? 0;
-    this.cantidad = 100;
+    this.cantidad = 1;
     this.especificaciones = '';
     this.fechaEntrega = '';
+    this.opciones.set([]);
+    this.selecciones = {};
     this.elegido.set(servicio);
+
+    if (!servicio.personalizable) return;
+    this.cargandoOpciones.set(true);
+    this.catalogo.opciones(servicio.idservicio).subscribe({
+      next: (lista) => {
+        this.opciones.set(lista);
+        for (const grupo of this.gruposOpciones()) {
+          if (grupo.opciones.length) this.selecciones[grupo.grupo] = grupo.opciones[0].idopcion;
+        }
+        this.cargandoOpciones.set(false);
+      },
+      error: (err) => {
+        this.cargandoOpciones.set(false);
+        this.elegido.set(null);
+        this.notificador.error(err, 'No se pudieron cargar las opciones del servicio');
+      },
+    });
+  }
+
+  gruposOpciones(): GrupoOpciones[] {
+    const grupos = new Map<string, ServicioOpcion[]>();
+    for (const opcion of this.opciones()) {
+      const lista = grupos.get(opcion.grupo) ?? [];
+      lista.push(opcion);
+      grupos.set(opcion.grupo, lista);
+    }
+    return Array.from(grupos.entries()).map(([grupo, opciones]) => ({ grupo, opciones }));
+  }
+
+  opcionSeleccionada(grupo: string): ServicioOpcion | undefined {
+    const id = Number(this.selecciones[grupo]);
+    return this.opciones().find((o) => o.idopcion === id);
+  }
+
+  adicionalUnitario(): number {
+    return this.gruposOpciones().reduce((total, grupo) => total + (this.opcionSeleccionada(grupo.grupo)?.incremento ?? 0), 0);
+  }
+
+  precioUnitario(): number {
+    return (this.elegido()?.precioBase ?? 0) + this.adicionalUnitario();
   }
 
   total(): number {
-    return (this.elegido()?.precioBase ?? 0) * (this.cantidad || 0);
+    return this.precioUnitario() * (this.cantidad || 0);
+  }
+
+  opcionesCompletas(): boolean {
+    const servicio = this.elegido();
+    if (!servicio?.personalizable) return true;
+    const grupos = this.gruposOpciones();
+    return grupos.length > 0 && grupos.every((g) => !!this.selecciones[g.grupo]);
+  }
+
+  detallePrecio(): string | null {
+    const servicio = this.elegido();
+    if (!servicio?.personalizable) return null;
+    const partes = [`Precio base S/ ${servicio.precioBase.toFixed(2)}`];
+    for (const grupo of this.gruposOpciones()) {
+      const opcion = this.opcionSeleccionada(grupo.grupo);
+      if (opcion) partes.push(`${grupo.grupo}: ${opcion.nombre} (+S/ ${opcion.incremento.toFixed(2)})`);
+    }
+    partes.push(`Precio unitario final S/ ${this.precioUnitario().toFixed(2)}`);
+    return partes.join(' | ');
+  }
+
+  imagen(servicio: Servicio): string {
+    return servicio.imagenUrl || '/assets/servicios/default.svg';
+  }
+
+  cerrar(): void {
+    this.elegido.set(null);
+    this.opciones.set([]);
+    this.selecciones = {};
   }
 
   solicitar(): void {
     const servicio = this.elegido();
-    if (!servicio || !this.idcliente || !this.cantidad || this.cantidad < 1) return;
+    if (!servicio || !this.idcliente || !this.cantidad || this.cantidad < 1 || !this.opcionesCompletas()) return;
     this.guardando.set(true);
     this.ventas.registrar({
       idcliente: this.idcliente,
@@ -95,10 +175,12 @@ export class Catalogo implements OnInit {
       cantidad: this.cantidad,
       especificaciones: this.especificaciones,
       fechaEntrega: this.fechaEntrega ? `${this.fechaEntrega}T18:00:00` : null,
+      precioUnitarioAcordado: servicio.personalizable ? Number(this.precioUnitario().toFixed(2)) : null,
+      detallePrecio: this.detallePrecio(),
     }).subscribe({
       next: (pedido) => {
         this.guardando.set(false);
-        this.elegido.set(null);
+        this.cerrar();
         this.notificador.ok(`Pedido #${pedido.idpedido} registrado para ${pedido.cliente}.`);
         this.router.navigate(['/pedidos', pedido.idpedido]);
       },
