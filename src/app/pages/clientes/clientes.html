@@ -1,6 +1,6 @@
 <div class="cabecera-pagina">
-  <div><span class="seccion-kicker">GESTIÓN COMERCIAL</span><h1>Clientes</h1><p class="texto-suave">Base comercial utilizada por cotizaciones, pedidos, pagos y seguimiento.</p></div>
-  <div class="fila"><input class="buscador" type="search" placeholder="Buscar por nombre, RUC/DNI, contacto..." [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" /><button type="button" class="btn btn-primario" (click)="nuevo()">＋ Nuevo cliente</button></div>
+  <div><span class="seccion-kicker">CLIENTES</span><h1>Clientes</h1><p class="texto-suave">Centraliza los datos de contacto para no repetirlos en cada pedido.</p></div>
+  <div class="fila"><input class="buscador" type="search" placeholder="Buscar por nombre, RUC/DNI o contacto..." [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" /><button type="button" class="btn btn-primario" (click)="nuevo()">＋ Nuevo cliente</button></div>
 </div>
 
 <div class="tarjeta sin-relleno">
@@ -16,7 +16,7 @@
           <td>@if (c.activo) { <span class="badge badge-ok">Activo</span> } @else { <span class="badge badge-apagado">Inactivo</span> }</td>
           <td class="num nowrap"><button class="btn btn-secundario btn-pequeno" (click)="editar(c)">Editar</button>@if (c.activo) { <button class="btn btn-peligro-suave btn-pequeno" (click)="desactivar(c)">Desactivar</button> }</td>
         </tr>
-      } @empty { <tr><td colspan="7" class="vacio">No hay clientes registrados. Registra el primero para iniciar el flujo comercial.</td></tr> } }
+      } @empty { <tr><td colspan="7" class="vacio">No hay clientes registrados. Registra el primero para empezar.</td></tr> } }
     </tbody>
   </table></div>
 </div>
