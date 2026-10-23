@@ -1,14 +1,13 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../core/auth.service';
-import { NotificacionesService } from '../core/services/notificaciones.service';
 
 interface Opcion {
   ruta: string;
   texto: string;
   icono: string;
   roles: string[];
-  grupo: 'GENERAL' | 'COMERCIAL' | 'OPERACIONES' | 'GESTION';
+  grupo: 'TRABAJO' | 'CONTROL';
 }
 
 interface GrupoMenu {
@@ -17,17 +16,13 @@ interface GrupoMenu {
 }
 
 const MENU: Opcion[] = [
-  { ruta: '/dashboard', texto: 'Dashboard', icono: '⌂', roles: ['ADMIN', 'VENTAS', 'OPERACIONES'], grupo: 'GENERAL' },
-  { ruta: '/clientes', texto: 'Clientes', icono: '1', roles: ['ADMIN', 'VENTAS'], grupo: 'COMERCIAL' },
-  { ruta: '/catalogo', texto: 'Catálogo de servicios', icono: '2', roles: ['ADMIN', 'VENTAS'], grupo: 'COMERCIAL' },
-  { ruta: '/cotizaciones', texto: 'Cotizaciones', icono: '3', roles: ['ADMIN', 'VENTAS'], grupo: 'COMERCIAL' },
-  { ruta: '/pedidos', texto: 'Pedidos, pagos y entrega', icono: '4', roles: ['ADMIN', 'VENTAS', 'OPERACIONES'], grupo: 'COMERCIAL' },
-  { ruta: '/disenos', texto: 'Diseño y validación', icono: '5', roles: ['ADMIN', 'OPERACIONES'], grupo: 'OPERACIONES' },
-  { ruta: '/produccion', texto: 'Producción', icono: '6', roles: ['ADMIN', 'OPERACIONES'], grupo: 'OPERACIONES' },
-  { ruta: '/inventario', texto: 'Inventario', icono: '7', roles: ['ADMIN', 'OPERACIONES'], grupo: 'OPERACIONES' },
-  { ruta: '/reportes', texto: 'Reportes', icono: '▥', roles: ['ADMIN'], grupo: 'GESTION' },
-  { ruta: '/usuarios', texto: 'Usuarios y roles', icono: '◎', roles: ['ADMIN'], grupo: 'GESTION' },
-  { ruta: '/notificaciones', texto: 'Notificaciones', icono: '✉', roles: ['ADMIN', 'VENTAS', 'OPERACIONES'], grupo: 'GESTION' },
+  { ruta: '/dashboard', texto: 'Dashboard', icono: '⌂', roles: ['ADMIN', 'VENTAS', 'OPERACIONES'], grupo: 'TRABAJO' },
+  { ruta: '/clientes', texto: 'Clientes', icono: '◉', roles: ['ADMIN', 'VENTAS'], grupo: 'TRABAJO' },
+  { ruta: '/pedidos', texto: 'Pedidos', icono: '▣', roles: ['ADMIN', 'VENTAS', 'OPERACIONES'], grupo: 'TRABAJO' },
+  { ruta: '/produccion', texto: 'Producción', icono: '⚙', roles: ['ADMIN', 'OPERACIONES'], grupo: 'TRABAJO' },
+  { ruta: '/inventario', texto: 'Inventario', icono: '▦', roles: ['ADMIN', 'OPERACIONES'], grupo: 'TRABAJO' },
+  { ruta: '/reportes', texto: 'Reportes', icono: '▥', roles: ['ADMIN'], grupo: 'CONTROL' },
+  { ruta: '/usuarios', texto: 'Usuarios', icono: '◎', roles: ['ADMIN'], grupo: 'CONTROL' },
 ];
 
 @Component({
@@ -35,16 +30,13 @@ const MENU: Opcion[] = [
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './shell.html',
 })
-export class Shell implements OnInit {
+export class Shell {
   protected readonly auth = inject(AuthService);
-  protected readonly notificaciones = inject(NotificacionesService);
   protected readonly menuAbierto = signal(false);
 
   protected readonly grupos: GrupoMenu[] = [
-    { id: 'GENERAL', texto: 'GENERAL' },
-    { id: 'COMERCIAL', texto: 'COMERCIAL · CLIENTE A PEDIDO' },
-    { id: 'OPERACIONES', texto: 'OPERACIONES · PEDIDO A ENTREGA' },
-    { id: 'GESTION', texto: 'SUPERVISIÓN Y CONTROL' },
+    { id: 'TRABAJO', texto: 'GESTIÓN DEL DÍA A DÍA' },
+    { id: 'CONTROL', texto: 'ADMINISTRACIÓN' },
   ];
 
   protected opcionesGrupo(grupo: Opcion['grupo']): Opcion[] {
@@ -59,9 +51,5 @@ export class Shell implements OnInit {
     if (this.auth.tieneRol('VENTAS')) return 'Ventas';
     if (this.auth.tieneRol('OPERACIONES')) return 'Operaciones';
     return 'Personal interno';
-  }
-
-  ngOnInit(): void {
-    this.notificaciones.actualizarContador();
   }
 }
