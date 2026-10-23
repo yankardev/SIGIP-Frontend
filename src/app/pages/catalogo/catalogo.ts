@@ -143,6 +143,12 @@ export class Catalogo implements OnInit {
     return grupos.length > 0 && grupos.every((g) => !!this.selecciones[g.grupo]);
   }
 
+  opcionesSeleccionadas(): number[] {
+    return this.gruposOpciones()
+      .map((g) => Number(this.selecciones[g.grupo]))
+      .filter((id) => Number.isInteger(id) && id > 0);
+  }
+
   detallePrecio(): string | null {
     const servicio = this.elegido();
     if (!servicio?.personalizable) return null;
@@ -157,6 +163,11 @@ export class Catalogo implements OnInit {
 
   imagen(servicio: Servicio): string {
     return servicio.imagenUrl || '/assets/servicios/default.svg';
+  }
+
+  imagenError(evento: Event): void {
+    const img = evento.target as HTMLImageElement;
+    if (!img.src.endsWith('/assets/servicios/default.svg')) img.src = '/assets/servicios/default.svg';
   }
 
   cerrar(): void {
@@ -175,6 +186,8 @@ export class Catalogo implements OnInit {
       cantidad: this.cantidad,
       especificaciones: this.especificaciones,
       fechaEntrega: this.fechaEntrega ? `${this.fechaEntrega}T18:00:00` : null,
+      opcionesSeleccionadas: servicio.personalizable ? this.opcionesSeleccionadas() : null,
+      // Se muestran para el usuario, pero el backend vuelve a calcular el precio usando los IDs anteriores.
       precioUnitarioAcordado: servicio.personalizable ? Number(this.precioUnitario().toFixed(2)) : null,
       detallePrecio: this.detallePrecio(),
     }).subscribe({
