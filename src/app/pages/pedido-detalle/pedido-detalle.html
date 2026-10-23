@@ -2,101 +2,79 @@
   <div class="cabecera-pagina pedido-cabecera">
     <div>
       <a class="volver" routerLink="/pedidos">← Volver a pedidos</a>
-      <span class="seccion-kicker">TRAZABILIDAD DEL PEDIDO</span>
+      <span class="seccion-kicker">FICHA DEL PEDIDO</span>
       <h1>Pedido #{{ p.idpedido }} <app-estado [valor]="p.estado" /></h1>
-      <p class="texto-suave">Cliente: <strong>{{ p.cliente }}</strong> · registrado por {{ p.registradoPor || 'usuario histórico' }} · {{ p.fechaPedido | date: 'dd/MM/yyyy HH:mm' }}</p>
+      <p class="texto-suave">{{ p.cliente }} · {{ p.fechaPedido | date: 'dd/MM/yyyy HH:mm' }}</p>
     </div>
     <div class="fila">
-      @if (editable()) {
-        <button type="button" class="btn btn-primario" (click)="abrirPago()">Registrar pago</button>
-        <button type="button" class="btn btn-secundario" (click)="abrirEdicion()">Editar pedido</button>
-      }
-      @if (p.estado === 'TERMINADO' && esComercial()) {
-        <button type="button" class="btn btn-primario" (click)="entregar()">Registrar entrega</button>
-      }
+      @if (editable()) { <button type="button" class="btn btn-secundario" (click)="abrirEdicion()">Editar</button> }
+      @if (p.estado === 'REGISTRADO' && esComercial()) { <button type="button" class="btn btn-primario" (click)="abrirPago()">Registrar pago</button> }
+      @if (p.estado === 'TERMINADO' && esComercial()) { <button type="button" class="btn btn-primario" (click)="entregar()">Registrar entrega</button> }
     </div>
   </div>
 
-  @if (p.estado !== 'CANCELADO') {
-    <section class="tarjeta trazabilidad-card">
-      <div class="trazabilidad-cabecera">
-        <div><span class="seccion-kicker">FLUJO DEL PEDIDO</span><h2>Del registro a la entrega</h2></div>
-        <small class="texto-suave">Cada área habilita la siguiente etapa al completar su responsabilidad.</small>
-      </div>
-      <ol class="avance avance-interno">
-        @for (paso of pasos; track paso; let i = $index) {
-          <li [class.hecho]="i < indiceActual()" [class.actual]="i === indiceActual()">
-            <span class="punto">{{ i < indiceActual() ? '✓' : i + 1 }}</span><span>{{ paso | etiqueta }}</span>
-          </li>
-        }
-      </ol>
-    </section>
-  }
+  <section class="tarjeta pedido-resumen-simple">
+    <div><span>Cliente</span><strong>{{ p.cliente }}</strong><small>{{ p.idcliente ? 'Cliente #' + p.idcliente : 'Registro histórico' }}</small></div>
+    <div><span>Trabajo</span><strong>{{ p.nombreServicio }}</strong><small>{{ p.cantidad }} unidad(es)</small></div>
+    <div><span>Total</span><strong>{{ p.total | currency: 'PEN' : 'S/' }}</strong><small>{{ p.fechaEntrega ? 'Entrega: ' + (p.fechaEntrega | date:'dd/MM/yyyy') : 'Sin fecha comprometida' }}</small></div>
+    <div><span>Estado</span><strong>{{ p.estado | etiqueta }}</strong><small>Última actualización del pedido</small></div>
+  </section>
 
-  <section class="siguiente-accion">
-    <div class="siguiente-accion-icono">→</div>
-    <div class="siguiente-accion-copy">
-      <span class="seccion-kicker">SIGUIENTE RESPONSABILIDAD</span>
+  <section class="tarjeta accion-simple-pedido">
+    <div class="accion-simple-icono">→</div>
+    <div class="accion-simple-copy">
+      <span class="seccion-kicker">QUÉ FALTA HACER</span>
       @switch (p.estado) {
-        @case ('REGISTRADO') { <h2>Ventas · registrar pago</h2><p>El trabajo todavía no puede pasar a Operaciones. Registra el comprobante o pago recibido.</p> }
-        @case ('PAGO_EN_REVISION') { <h2>Ventas · verificar pago</h2><p>Valida la operación. Solo un pago aprobado habilita diseño o producción.</p> }
-        @case ('CONFIRMADO') { <h2>Operaciones · preparar diseño o producción</h2><p>El pedido está comercialmente confirmado. Si requiere arte, crea y valida versiones; si no requiere diseño, crea la orden de producción.</p> }
-        @case ('EN_DISENO') { <h2>Operaciones · validar diseño</h2><p>Gestiona las versiones hasta contar con un arte aprobado. Producción quedará bloqueada mientras no exista una versión válida.</p> }
-        @case ('EN_PRODUCCION') { <h2>Operaciones · ejecutar y controlar calidad</h2><p>Registra responsable, avance, reprocesos y resultado de calidad. Los consumos de materiales se registran en Inventario contra este pedido.</p> }
-        @case ('TERMINADO') { <h2>Ventas · registrar entrega</h2><p>Operaciones terminó y aprobó calidad. Confirma la entrega al cliente para cerrar el ciclo.</p> }
-        @case ('ENTREGADO') { <h2>Proceso completado</h2><p>El pedido queda cerrado, trazable y disponible para reportes y consulta histórica.</p> }
-        @case ('CANCELADO') { <h2>Pedido cancelado</h2><p>No se permiten nuevas operaciones sobre este trabajo.</p> }
+        @case ('REGISTRADO') { <h2>Registrar el pago</h2><p>El pedido ya está creado. Registra el pago recibido para continuar.</p> }
+        @case ('PAGO_EN_REVISION') { <h2>Confirmar el pago</h2><p>Hay un pago pendiente de validación. Confírmalo para liberar el trabajo.</p> }
+        @case ('CONFIRMADO') { <h2>Enviar a producción</h2><p>El pedido está listo. Crea la orden de producción y asigna un responsable.</p> }
+        @case ('EN_DISENO') { <h2>Completar preparación</h2><p>Este trabajo requiere una validación adicional antes de producirse.</p> }
+        @case ('EN_PRODUCCION') { <h2>Trabajo en producción</h2><p>El taller tiene el pedido. Consulta Producción para actualizar o finalizar el trabajo.</p> }
+        @case ('TERMINADO') { <h2>Registrar la entrega</h2><p>El trabajo está terminado. Confirma la entrega para cerrar el pedido.</p> }
+        @case ('ENTREGADO') { <h2>Pedido completado</h2><p>El trabajo fue entregado y queda disponible como historial de gestión.</p> }
+        @case ('CANCELADO') { <h2>Pedido cancelado</h2><p>No requiere nuevas acciones.</p> }
       }
     </div>
-    <div class="siguiente-accion-botones">
+    <div class="accion-simple-botones">
       @if (p.estado === 'REGISTRADO' && esComercial()) { <button type="button" class="btn btn-primario" (click)="abrirPago()">Registrar pago</button> }
-      @if ((p.estado === 'CONFIRMADO' || p.estado === 'EN_DISENO') && esOperativo()) { <a class="btn btn-primario" routerLink="/disenos" [queryParams]="{ pedido: p.idpedido }">Gestionar diseño</a> }
-      @if ((p.estado === 'CONFIRMADO' || p.estado === 'EN_DISENO' || p.estado === 'EN_PRODUCCION') && esOperativo()) { <a class="btn btn-secundario" routerLink="/produccion" [queryParams]="{ pedido: p.idpedido }">Producción</a> }
+      @if (p.estado === 'CONFIRMADO' && esOperativo()) { <a class="btn btn-primario" routerLink="/produccion" [queryParams]="{ pedido: p.idpedido }">Ir a producción</a> }
+      @if (p.estado === 'EN_DISENO' && esOperativo()) { <a class="btn btn-secundario" routerLink="/disenos" [queryParams]="{ pedido: p.idpedido }">Revisar preparación</a><a class="btn btn-primario" routerLink="/produccion" [queryParams]="{ pedido: p.idpedido }">Producción</a> }
+      @if (p.estado === 'EN_PRODUCCION' && esOperativo()) { <a class="btn btn-primario" routerLink="/produccion" [queryParams]="{ pedido: p.idpedido }">Ver producción</a> }
       @if (p.estado === 'TERMINADO' && esComercial()) { <button type="button" class="btn btn-primario" (click)="entregar()">Confirmar entrega</button> }
     </div>
   </section>
 
-  <div class="detalle-pedido-grid">
+  <div class="detalle-pedido-grid detalle-simple-grid">
     <section class="tarjeta detalle-pedido-panel">
-      <div class="panel-titulo"><div><h2>Información comercial</h2><p class="texto-suave">Datos acordados con el cliente.</p></div></div>
+      <div class="panel-titulo"><div><h2>Datos del pedido</h2><p class="texto-suave">Toda la información comercial en un solo lugar.</p></div></div>
       <dl class="datos datos-internos">
-        <dt>Cliente</dt><dd><strong>{{ p.cliente }}</strong>@if (p.idcliente) { <small class="texto-suave"> · ID {{ p.idcliente }}</small> }</dd>
-        <dt>Origen</dt><dd>@if (p.idcotizacion) { Cotización #{{ p.idcotizacion }} } @else { Pedido directo }</dd>
+        <dt>Cliente</dt><dd><strong>{{ p.cliente }}</strong></dd>
         <dt>Servicio</dt><dd>{{ p.nombreServicio }}</dd>
         <dt>Cantidad</dt><dd>{{ p.cantidad }}</dd>
         <dt>Precio unitario</dt><dd>{{ p.precioUnitario | currency: 'PEN' : 'S/' }}</dd>
         <dt>Total</dt><dd><strong class="total-destacado">{{ p.total | currency: 'PEN' : 'S/' }}</strong></dd>
-        <dt>Entrega solicitada</dt><dd>{{ p.fechaEntrega ? (p.fechaEntrega | date:'dd/MM/yyyy') : 'Sin fecha comprometida' }}</dd>
-        <dt>Especificaciones</dt><dd>{{ p.especificaciones || 'Sin especificaciones adicionales' }}</dd>
-        <dt>Última observación</dt><dd>{{ p.observacion || '—' }}</dd>
+        <dt>Fecha de entrega</dt><dd>{{ p.fechaEntrega ? (p.fechaEntrega | date:'dd/MM/yyyy') : 'Sin fecha' }}</dd>
+        <dt>Detalle del trabajo</dt><dd>{{ p.especificaciones || 'Sin indicaciones adicionales' }}</dd>
+        <dt>Observación</dt><dd>{{ p.observacion || '—' }}</dd>
       </dl>
       @if (cancelable()) {
         <div class="acciones acciones-secundarias">
-          @if (editable()) { <button type="button" class="btn btn-secundario" (click)="abrirEdicion()">Editar</button><button type="button" class="btn btn-peligro-suave" (click)="eliminar()" [disabled]="trabajando()">Eliminar</button> }
-          <button type="button" class="btn btn-peligro-suave" (click)="cancelar()" [disabled]="trabajando()">Cancelar pedido</button>
+          @if (editable()) { <button type="button" class="btn btn-secundario" (click)="abrirEdicion()">Editar pedido</button> }
+          <button type="button" class="btn btn-peligro-suave" (click)="cancelar()" [disabled]="trabajando()">Cancelar</button>
         </div>
       }
     </section>
 
     <section class="tarjeta detalle-pedido-panel">
-      <div class="panel-titulo"><div><h2>Pagos</h2><p class="texto-suave">Control comercial previo a Operaciones.</p></div>@if (editable()) { <button type="button" class="btn btn-primario btn-pequeno" (click)="abrirPago()">+ Pago</button> }</div>
+      <div class="panel-titulo"><div><h2>Pago</h2><p class="texto-suave">El control de pago forma parte de esta misma ficha.</p></div>@if (p.estado === 'REGISTRADO' && esComercial()) { <button type="button" class="btn btn-primario btn-pequeno" (click)="abrirPago()">+ Registrar</button> }</div>
       @for (pg of pagos(); track pg.idpago) {
-        <div class="registro-operativo">
+        <div class="registro-operativo pago-simple">
           <div class="registro-operativo-icono">S/</div>
-          <div class="registro-operativo-copy"><strong>{{ pg.monto | currency: 'PEN' : 'S/' }}</strong><span>{{ pg.metodo | etiqueta }} · operación {{ pg.numeroOperacion }}</span><small>{{ pg.fechaRegistro | date: 'dd/MM/yyyy HH:mm' }}@if (pg.verificadoPor) { · verificado por {{ pg.verificadoPor }} }</small>@if (pg.observacion) { <small>{{ pg.observacion }}</small> }</div>
-          <div class="registro-operativo-accion"><app-estado [valor]="pg.estado" />@if (esComercial() && pg.estado === 'PENDIENTE') { <button type="button" class="btn btn-primario btn-pequeno" (click)="abrirVerificacion(pg)">Verificar</button> }</div>
+          <div class="registro-operativo-copy"><strong>{{ pg.monto | currency: 'PEN' : 'S/' }}</strong><span>{{ pg.metodo | etiqueta }} · {{ pg.numeroOperacion }}</span><small>{{ pg.fechaRegistro | date: 'dd/MM/yyyy HH:mm' }}</small>@if (pg.observacion) { <small>{{ pg.observacion }}</small> }</div>
+          <div class="registro-operativo-accion"><app-estado [valor]="pg.estado" />@if (esComercial() && pg.estado === 'PENDIENTE') { <button type="button" class="btn btn-primario btn-pequeno" (click)="abrirVerificacion(pg)">Confirmar</button> }</div>
         </div>
-      } @empty { <p class="vacio">Aún no hay pagos registrados.</p> }
+      } @empty { <div class="estado-vacio-simple"><strong>Sin pago registrado</strong><small>Cuando recibas el pago, regístralo aquí.</small></div> }
     </section>
-
-    @if (esOperativo()) {
-      <section class="tarjeta detalle-pedido-panel panel-ancho">
-        <div class="panel-titulo"><div><h2>Diseños y validaciones internas</h2><p class="texto-suave">Historial de versiones antes de autorizar la producción.</p></div>@if (p.estado === 'CONFIRMADO' || p.estado === 'EN_DISENO') { <a class="btn btn-primario btn-pequeno" routerLink="/disenos" [queryParams]="{ pedido: p.idpedido }">Gestionar diseño</a> }</div>
-        <div class="tabla-contenedor"><table class="tabla tabla-versiones"><thead><tr><th>Versión</th><th>Archivo</th><th>Estado</th><th>Validación</th></tr></thead><tbody>
-          @for (d of listaDisenos(); track d.iddiseno) { <tr><td><strong>v{{ d.version }}</strong></td><td>{{ d.nombreArchivo }}</td><td><app-estado [valor]="d.estado" /></td><td>{{ d.comentarioCliente || '—' }}</td></tr> } @empty { <tr><td colspan="4" class="vacio">Este pedido todavía no tiene diseños registrados.</td></tr> }
-        </tbody></table></div>
-      </section>
-    }
   </div>
 
   @switch (modal()) {
@@ -109,16 +87,16 @@
     }
     @case ('editar') {
       <app-modal titulo="Editar pedido" (cerrar)="modal.set(null)"><form (ngSubmit)="guardarEdicion()" #f="ngForm">
-        <div class="rejilla-2"><label class="campo"><span>Cantidad</span><input type="number" name="cantidad" min="1" max="100000" required [(ngModel)]="edicion.cantidad" /></label><label class="campo"><span>Entrega solicitada</span><input type="date" name="fechaEntrega" [(ngModel)]="edicion.fechaEntrega" /></label></div>
-        <label class="campo"><span>Especificaciones</span><textarea name="especificaciones" rows="3" maxlength="1000" [(ngModel)]="edicion.especificaciones"></textarea></label>
+        <div class="rejilla-2"><label class="campo"><span>Cantidad</span><input type="number" name="cantidad" min="1" max="100000" required [(ngModel)]="edicion.cantidad" /></label><label class="campo"><span>Fecha de entrega</span><input type="date" name="fechaEntrega" [(ngModel)]="edicion.fechaEntrega" /></label></div>
+        <label class="campo"><span>Detalle del trabajo</span><textarea name="especificaciones" rows="3" maxlength="1000" [(ngModel)]="edicion.especificaciones"></textarea></label>
         <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar</button></div>
       </form></app-modal>
     }
     @case ('verificar') {
-      <app-modal titulo="Verificar pago" (cerrar)="modal.set(null)">
+      <app-modal titulo="Confirmar pago" (cerrar)="modal.set(null)">
         <p>{{ verificacion.pago?.monto | currency: 'PEN' : 'S/' }} por {{ verificacion.pago?.metodo | etiqueta }}, referencia <strong>{{ verificacion.pago?.numeroOperacion }}</strong>.</p>
         <label class="campo"><span>Observación</span><textarea name="observacion" rows="2" maxlength="300" [(ngModel)]="verificacion.observacion"></textarea></label>
-        <div class="acciones"><button type="button" class="btn btn-peligro-suave" [disabled]="trabajando()" (click)="verificar(false)">Rechazar</button><button type="button" class="btn btn-primario" [disabled]="trabajando()" (click)="verificar(true)">Aprobar pago</button></div>
+        <div class="acciones"><button type="button" class="btn btn-peligro-suave" [disabled]="trabajando()" (click)="verificar(false)">Rechazar</button><button type="button" class="btn btn-primario" [disabled]="trabajando()" (click)="verificar(true)">Confirmar pago</button></div>
       </app-modal>
     }
   }
