@@ -3,14 +3,12 @@ import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
-import { AuthService } from '../../core/auth.service';
 import { Diseno, DisenoRequest } from '../../core/models';
 import { DisenoService } from '../../core/services/diseno.service';
 import { NotificadorService } from '../../core/notificador.service';
 import { EstadoBadge } from '../../shared/estado-badge';
 import { Modal } from '../../shared/modal';
 
-/** Versiones y validaciones del diseño antes de producción. */
 @Component({
   selector: 'app-disenos',
   imports: [DatePipe, FormsModule, RouterLink, EstadoBadge, Modal],
@@ -18,8 +16,6 @@ import { Modal } from '../../shared/modal';
 })
 export class Disenos implements OnInit {
   readonly pedido = input<string>();
-
-  protected readonly auth = inject(AuthService);
   private readonly servicio = inject(DisenoService);
   private readonly notificador = inject(NotificadorService);
 
@@ -27,7 +23,6 @@ export class Disenos implements OnInit {
   protected readonly cargando = signal(true);
   protected readonly trabajando = signal(false);
   protected filtroPedido: number | null = null;
-
   protected readonly modal = signal<'form' | 'decision' | null>(null);
   protected editandoId: number | null = null;
   protected form: DisenoRequest = this.vacio();
@@ -37,20 +32,14 @@ export class Disenos implements OnInit {
     const p = Number(this.pedido());
     this.filtroPedido = p > 0 ? p : null;
     this.cargar();
-    if (this.filtroPedido && this.auth.esAdmin()) this.nuevo();
+    if (this.filtroPedido) this.nuevo();
   }
 
   cargar(): void {
     this.cargando.set(true);
     this.servicio.listar(this.filtroPedido).subscribe({
-      next: (l) => {
-        this.disenos.set([...l].sort((a, b) => b.idpedido - a.idpedido || b.version - a.version));
-        this.cargando.set(false);
-      },
-      error: (err) => {
-        this.cargando.set(false);
-        this.notificador.error(err, 'No se pudieron cargar los diseños');
-      },
+      next: (l) => { this.disenos.set([...l].sort((a, b) => b.idpedido - a.idpedido || b.version - a.version)); this.cargando.set(false); },
+      error: (err) => { this.cargando.set(false); this.notificador.error(err, 'No se pudieron cargar los diseños'); },
     });
   }
 
@@ -68,7 +57,7 @@ export class Disenos implements OnInit {
 
   guardar(): void {
     const peticion = this.editandoId ? this.servicio.actualizar(this.editandoId, this.form) : this.servicio.registrar(this.form);
-    this.ejecutar(peticion, this.editandoId ? 'Diseño actualizado' : 'Nueva versión registrada para validación');
+    this.ejecutar(peticion, this.editandoId ? 'Diseño actualizado' : 'Versión registrada y pedido enviado a etapa de diseño');
   }
 
   eliminar(d: Diseno): void {
@@ -84,25 +73,15 @@ export class Disenos implements OnInit {
   decidir(): void {
     const d = this.decision.diseno;
     if (!d) return;
-    this.ejecutar(
-      this.servicio.decidir(d.iddiseno, this.decision.tipo, this.decision.comentario),
-      this.decision.tipo === 'APROBAR' ? 'Diseño aprobado: el pedido puede continuar a Producción' : 'Observación registrada para una nueva versión',
-    );
+    this.ejecutar(this.servicio.decidir(d.iddiseno, this.decision.tipo, this.decision.comentario),
+      this.decision.tipo === 'APROBAR' ? 'Diseño aprobado: Producción queda habilitada' : 'Observación registrada: se requiere una nueva versión');
   }
 
   private ejecutar(peticion: Observable<unknown>, mensaje: string): void {
     this.trabajando.set(true);
     peticion.subscribe({
-      next: () => {
-        this.trabajando.set(false);
-        this.modal.set(null);
-        this.notificador.ok(mensaje);
-        this.cargar();
-      },
-      error: (err) => {
-        this.trabajando.set(false);
-        this.notificador.error(err);
-      },
+      next: () => { this.trabajando.set(false); this.modal.set(null); this.notificador.ok(mensaje); this.cargar(); },
+      error: (err) => { this.trabajando.set(false); this.notificador.error(err); },
     });
   }
 
