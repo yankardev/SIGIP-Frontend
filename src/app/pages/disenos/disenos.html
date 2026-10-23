@@ -1,84 +1,39 @@
 <div class="cabecera-pagina">
-  <div>
-    <span class="seccion-kicker">ETAPA 3 · OPERACIONES</span>
-    <h1>Diseño y validación interna</h1>
-    <p class="texto-suave">Gestiona las versiones del arte y controla su validación antes de enviar el trabajo a Producción.</p>
-  </div>
-  <div class="fila">
-    <input class="buscador corto" type="number" min="1" placeholder="N.º pedido" [(ngModel)]="filtroPedido" (keyup.enter)="cargar()" aria-label="Filtrar por pedido" />
-    <button type="button" class="btn btn-secundario" (click)="cargar()">Filtrar</button>
-    @if (auth.esAdmin()) { <button type="button" class="btn btn-primario" (click)="nuevo()">＋ Nueva versión</button> }
-  </div>
+  <div><span class="seccion-kicker">OPERACIONES · ETAPA DE DISEÑO</span><h1>Diseño y validación interna</h1><p class="texto-suave">Controla versiones del arte antes de liberar un trabajo hacia Producción.</p></div>
+  <div class="fila"><input class="buscador corto" type="number" min="1" placeholder="N.º pedido" [(ngModel)]="filtroPedido" (keyup.enter)="cargar()" /><button type="button" class="btn btn-secundario" (click)="cargar()">Filtrar</button><button type="button" class="btn btn-primario" (click)="nuevo()">＋ Nueva versión</button></div>
 </div>
 
 <section class="modulo-guia tarjeta modulo-guia-diseno">
-  <div class="modulo-guia-titulo"><span>3</span><div><strong>Qué debe ocurrir aquí</strong><small>El arte debe quedar validado antes de iniciar la producción.</small></div></div>
-  <div class="modulo-guia-pasos">
-    <div><b>1</b><span><strong>Registrar versión</strong><small>Archivo y descripción del diseño.</small></span></div>
-    <div><b>2</b><span><strong>Revisar</strong><small>Comprobar que corresponde al pedido.</small></span></div>
-    <div><b>3</b><span><strong>Aprobar u observar</strong><small>Registrar la validación interna.</small></span></div>
-    <div><b>4</b><span><strong>Enviar a producción</strong><small>Solo con una versión válida.</small></span></div>
-  </div>
+  <div class="modulo-guia-titulo"><span>5</span><div><strong>Control previo a producción</strong><small>Al registrar la primera versión, el pedido entra a EN DISEÑO. Producción solo se habilita cuando existe una versión APROBADA.</small></div></div>
+  <div class="modulo-guia-pasos"><div><b>1</b><span><strong>Subir versión</strong><small>Archivo o enlace del arte.</small></span></div><div><b>2</b><span><strong>Revisar</strong><small>Medidas, texto, colores y requisitos.</small></span></div><div><b>3</b><span><strong>Aprobar u observar</strong><small>Dejar evidencia del control interno.</small></span></div><div><b>4</b><span><strong>Liberar a producción</strong><small>Solo un arte aprobado permite producir.</small></span></div></div>
 </section>
 
-<div class="tarjeta sin-relleno">
-  <div class="tabla-cabecera-interna">
-    <div><strong>Versiones de diseño</strong><small>Historial de archivos y validaciones asociados a los pedidos.</small></div>
-    <span class="badge badge-info">{{ disenos().length }} versiones</span>
-  </div>
-  <div class="tabla-contenedor">
-    <table class="tabla">
-      <thead><tr><th>Pedido</th><th>Cliente</th><th>Versión</th><th>Archivo</th><th>Estado</th><th>Observación / validación</th><th>Fecha</th><th>Acciones</th></tr></thead>
-      <tbody>
-        @if (cargando()) {
-          <tr><td colspan="8" class="vacio">Cargando…</td></tr>
-        } @else {
-          @for (d of disenos(); track d.iddiseno) {
-            <tr>
-              <td><a [routerLink]="['/pedidos', d.idpedido]"><strong>#{{ d.idpedido }}</strong></a></td>
-              <td>{{ d.cliente }}</td>
-              <td><strong>v{{ d.version }}</strong></td>
-              <td>@if (d.urlArchivo) { <a [href]="d.urlArchivo" target="_blank" rel="noopener">{{ d.nombreArchivo }}</a> } @else { {{ d.nombreArchivo }} } @if (d.descripcion) { <div class="texto-suave pequeno">{{ d.descripcion }}</div> }</td>
-              <td><app-estado [valor]="d.estado" /></td>
-              <td>{{ d.comentarioCliente || 'Sin observaciones' }}</td>
-              <td>{{ d.fechaRegistro | date: 'dd/MM/yyyy HH:mm' }}</td>
-              <td class="num nowrap">
-                @if (!auth.esAdmin() && d.estado === 'EN_REVISION') {
-                  <button type="button" class="btn btn-primario btn-pequeno" (click)="abrirDecision(d, 'APROBAR')">Aprobar</button>
-                  <button type="button" class="btn btn-secundario btn-pequeno" (click)="abrirDecision(d, 'OBSERVAR')">Observar</button>
-                }
-                @if (auth.esAdmin()) {
-                  <button type="button" class="btn btn-secundario btn-pequeno" (click)="editar(d)">Editar</button>
-                  <button type="button" class="btn btn-peligro-suave btn-pequeno" (click)="eliminar(d)">Eliminar</button>
-                }
-              </td>
-            </tr>
-          } @empty {
-            <tr><td colspan="8" class="vacio">No hay diseños registrados. Selecciona un pedido confirmado e incorpora su primera versión.</td></tr>
-          }
-        }
-      </tbody>
-    </table>
-  </div>
-</div>
+<div class="tarjeta sin-relleno"><div class="tabla-cabecera-interna"><div><strong>Versiones de diseño</strong><small>Historial completo por pedido.</small></div><span class="badge badge-info">{{ disenos().length }} versiones</span></div><div class="tabla-contenedor"><table class="tabla">
+  <thead><tr><th>Pedido</th><th>Cliente</th><th>Versión</th><th>Archivo</th><th>Estado</th><th>Validación interna</th><th>Fecha</th><th>Acciones</th></tr></thead>
+  <tbody>
+    @if (cargando()) { <tr><td colspan="8" class="vacio">Cargando…</td></tr> }
+    @else { @for (d of disenos(); track d.iddiseno) {
+      <tr><td><a [routerLink]="['/pedidos', d.idpedido]"><strong>#{{ d.idpedido }}</strong></a></td><td>{{ d.cliente }}</td><td><strong>v{{ d.version }}</strong></td><td>@if (d.urlArchivo) { <a [href]="d.urlArchivo" target="_blank" rel="noopener">{{ d.nombreArchivo }}</a> } @else { {{ d.nombreArchivo }} }@if (d.descripcion) { <div class="texto-suave pequeno">{{ d.descripcion }}</div> }</td><td><app-estado [valor]="d.estado" /></td><td>{{ d.comentarioCliente || 'Pendiente de validación' }}</td><td>{{ d.fechaRegistro | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td class="num nowrap">@if (d.estado === 'EN_REVISION') { <button type="button" class="btn btn-primario btn-pequeno" (click)="abrirDecision(d, 'APROBAR')">Aprobar</button><button type="button" class="btn btn-secundario btn-pequeno" (click)="abrirDecision(d, 'OBSERVAR')">Observar</button><button type="button" class="btn btn-secundario btn-pequeno" (click)="editar(d)">Editar</button><button type="button" class="btn btn-peligro-suave btn-pequeno" (click)="eliminar(d)">Eliminar</button> }</td></tr>
+    } @empty { <tr><td colspan="8" class="vacio">No hay diseños. Desde un pedido CONFIRMADO registra la primera versión cuando el trabajo requiera arte.</td></tr> } }
+  </tbody>
+</table></div></div>
 
 @if (modal() === 'form') {
-  <app-modal [titulo]="editandoId ? 'Editar versión de diseño' : 'Registrar nueva versión de diseño'" (cerrar)="modal.set(null)">
-    <form (ngSubmit)="guardar()" #f="ngForm">
-      <label class="campo"><span>N.º de pedido</span><input type="number" name="idpedido" min="1" required [(ngModel)]="form.idpedido" [disabled]="!!editandoId" /></label>
-      <label class="campo"><span>Nombre del archivo (pdf, png, jpg, ai, psd, svg, cdr)</span><input name="nombreArchivo" required maxlength="200" placeholder="tarjeta-v1.pdf" [(ngModel)]="form.nombreArchivo" /></label>
-      <label class="campo"><span>URL del archivo (opcional)</span><input name="urlArchivo" maxlength="500" placeholder="https://drive.google.com/…" [(ngModel)]="form.urlArchivo" /></label>
-      <label class="campo"><span>Descripción / criterios de revisión</span><textarea name="descripcion" rows="2" maxlength="500" [(ngModel)]="form.descripcion"></textarea></label>
-      <p class="alerta alerta-flujo">El pedido debe tener el pago verificado. Cada nueva versión mantiene la trazabilidad de los cambios antes de Producción.</p>
-      <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar versión</button></div>
-    </form>
-  </app-modal>
+  <app-modal [titulo]="editandoId ? 'Editar versión de diseño' : 'Registrar nueva versión'" (cerrar)="modal.set(null)"><form (ngSubmit)="guardar()" #f="ngForm">
+    <label class="campo"><span>N.º de pedido</span><input type="number" name="idpedido" min="1" required [(ngModel)]="form.idpedido" [disabled]="!!editandoId" /></label>
+    <label class="campo"><span>Nombre del archivo</span><input name="nombreArchivo" required maxlength="200" placeholder="arte-final-v1.pdf" [(ngModel)]="form.nombreArchivo" /></label>
+    <label class="campo"><span>URL del archivo (opcional)</span><input name="urlArchivo" maxlength="500" placeholder="https://..." [(ngModel)]="form.urlArchivo" /></label>
+    <label class="campo"><span>Descripción / criterios</span><textarea name="descripcion" rows="3" maxlength="500" [(ngModel)]="form.descripcion"></textarea></label>
+    <p class="alerta alerta-flujo">El pedido debe estar CONFIRMADO por Ventas. La primera versión cambia automáticamente el pedido a EN DISEÑO.</p>
+    <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="trabajando() || f.invalid">Guardar versión</button></div>
+  </form></app-modal>
 }
 
 @if (modal() === 'decision') {
-  <app-modal [titulo]="decision.tipo === 'APROBAR' ? 'Validar diseño' : 'Observar diseño'" (cerrar)="modal.set(null)">
+  <app-modal [titulo]="decision.tipo === 'APROBAR' ? 'Aprobar diseño para producción' : 'Observar diseño'" (cerrar)="modal.set(null)">
     <p>Pedido #{{ decision.diseno?.idpedido }} · versión {{ decision.diseno?.version }} · {{ decision.diseno?.nombreArchivo }}</p>
-    <label class="campo"><span>{{ decision.tipo === 'APROBAR' ? 'Comentario de validación (opcional)' : 'Cambios requeridos' }}</span><textarea name="comentario" rows="3" maxlength="500" [(ngModel)]="decision.comentario"></textarea></label>
-    <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button><button type="button" class="btn btn-primario" [disabled]="trabajando() || (decision.tipo === 'OBSERVAR' && !decision.comentario.trim())" (click)="decidir()">{{ decision.tipo === 'APROBAR' ? 'Aprobar diseño' : 'Registrar observación' }}</button></div>
+    <label class="campo"><span>{{ decision.tipo === 'APROBAR' ? 'Evidencia / comentario de validación' : 'Cambios requeridos' }}</span><textarea name="comentario" rows="3" maxlength="500" [(ngModel)]="decision.comentario"></textarea></label>
+    <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(null)">Cancelar</button><button type="button" class="btn btn-primario" [disabled]="trabajando() || (decision.tipo === 'OBSERVAR' && !decision.comentario.trim())" (click)="decidir()">{{ decision.tipo === 'APROBAR' ? 'Aprobar y liberar' : 'Registrar observación' }}</button></div>
   </app-modal>
 }
