@@ -1,18 +1,93 @@
-/* Ajustes del flujo empresarial completo de SIGIP */
-.flujo-etapas-completo {
-  grid-template-columns: repeat(4, minmax(145px, 1fr));
-  gap: 10px;
+/* SIGIP · interfaz empresarial simplificada
+   Objetivo: menos pantallas, menos pasos y foco en las tareas que realmente usa la empresa. */
+
+/* Topbar limpio */
+.topbar-simple { gap: 12px; }
+.contexto-topbar { display: flex; flex-direction: column; line-height: 1.2; }
+.contexto-topbar strong { font-size: 11px; color: #17354d; }
+.contexto-topbar small { margin-top: 2px; font-size: 8.5px; color: #8193a3; }
+
+/* Dashboard: proceso principal de cuatro pasos */
+.gestion-simple { padding: 18px 19px; margin-bottom: 14px; }
+.gestion-simple-cabecera { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; }
+.gestion-simple-cabecera h2 { margin: 3px 0 4px; font-size: 15px; color: #15344e; }
+.gestion-simple-cabecera p { margin: 0; font-size: 9.5px; }
+.proceso-simple { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; gap: 9px; align-items: stretch; margin-top: 16px; }
+.proceso-simple > i { align-self: center; color: #9ab0c2; font-style: normal; font-size: 16px; }
+.proceso-simple-item { min-width: 0; display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid #dfe8f0; border-radius: 8px; background: #f9fbfd; color: inherit; text-decoration: none; }
+.proceso-simple-item:hover { border-color: #a9cbe6; background: #f4f9fd; text-decoration: none; }
+.proceso-simple-item > span { width: 28px; height: 28px; min-width: 28px; display: grid; place-items: center; border-radius: 7px; background: #e8f3fc; color: #0d72bd; font-weight: 800; font-size: 10px; }
+.proceso-simple-item strong { display: block; font-size: 10.5px; color: #17354d; }
+.proceso-simple-item small { display: block; margin-top: 2px; font-size: 8px; line-height: 1.35; color: #7e92a3; }
+.soporte-simple { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; padding: 9px 11px; border-radius: 7px; background: #f6f8fa; color: #647b8e; font-size: 8.5px; }
+.soporte-simple a { font-weight: 700; color: #0b73c2; white-space: nowrap; }
+
+.kpis-simples { grid-template-columns: repeat(4, minmax(0,1fr)); }
+.dashboard-simple-paneles { align-items: stretch; }
+.acceso-rapido, .resumen-ejecutivo { padding: 16px; }
+.accesos-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; }
+.accesos-grid a { display: flex; gap: 9px; align-items: center; padding: 11px; border: 1px solid #e1e9ef; border-radius: 8px; background: #fbfcfd; color: inherit; text-decoration: none; }
+.accesos-grid a:hover { border-color: #b9d4e8; background: #f7fbfe; text-decoration: none; }
+.accesos-grid a > span { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 7px; background: #edf5fb; color: #0b73c2; font-weight: 800; }
+.accesos-grid strong { display: block; font-size: 9.5px; color: #1a3850; }
+.accesos-grid small { display: block; margin-top: 2px; font-size: 8px; color: #8394a3; }
+.resumen-fila { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #edf1f4; }
+.resumen-fila span { font-size: 9px; color: #718597; }
+.resumen-fila strong { font-size: 11px; color: #17354d; }
+.btn-ancho { display: block; width: 100%; margin-top: 13px; text-align: center; }
+
+/* Encabezados de ayuda cortos en vez de diagramas de proceso */
+.ayuda-simple { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: 0 0 14px; padding: 12px 14px; background: #f8fbfd; }
+.ayuda-simple strong { display: block; font-size: 10px; color: #17354d; }
+.ayuda-simple small { display: block; margin-top: 3px; font-size: 8.5px; color: #7e91a2; }
+.ayuda-simple > span { padding: 6px 9px; border-radius: 999px; background: #e8f6ef; color: #278765; font-size: 8px; font-weight: 700; white-space: nowrap; }
+
+/* Tablas más fáciles de leer */
+.tabla-simple tbody tr:hover { background: #f8fbfd; }
+.tabla-simple td { vertical-align: middle; }
+.tabla-simple td strong { color: #17354d; }
+
+/* Nuevo pedido */
+.catalogo-simple .servicio-interno { min-height: 225px; }
+.nota-simple { margin: 10px 0 0; padding: 9px 11px; border-radius: 7px; background: #f4f8fb; color: #6d8294; font-size: 8.5px; }
+
+/* Ficha única del pedido */
+.pedido-resumen-simple { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 0; padding: 0; overflow: hidden; margin-bottom: 14px; }
+.pedido-resumen-simple > div { padding: 14px 16px; border-right: 1px solid #e7edf2; }
+.pedido-resumen-simple > div:last-child { border-right: 0; }
+.pedido-resumen-simple span { display: block; font-size: 8px; color: #8092a2; text-transform: uppercase; letter-spacing: .5px; }
+.pedido-resumen-simple strong { display: block; margin-top: 5px; font-size: 13px; color: #17354d; }
+.pedido-resumen-simple small { display: block; margin-top: 3px; font-size: 8px; color: #8797a5; }
+.accion-simple-pedido { display: grid; grid-template-columns: auto 1fr auto; gap: 13px; align-items: center; margin-bottom: 14px; padding: 15px 16px; border-left: 4px solid #1680d5 !important; background: #fbfdff; }
+.accion-simple-icono { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; background: #eaf4fc; color: #0c75c5; font-size: 17px; font-weight: 800; }
+.accion-simple-copy h2 { margin: 2px 0 3px; font-size: 13px; color: #17354d; }
+.accion-simple-copy p { margin: 0; font-size: 9px; color: #718698; }
+.accion-simple-botones { display: flex; gap: 7px; flex-wrap: wrap; justify-content: flex-end; }
+.detalle-simple-grid { align-items: start; }
+.pago-simple { border: 1px solid #e5ebf0; border-radius: 8px; padding: 10px; }
+.estado-vacio-simple { padding: 22px 10px; text-align: center; color: #8395a4; }
+.estado-vacio-simple strong { display: block; font-size: 10px; color: #536d82; }
+.estado-vacio-simple small { display: block; margin-top: 3px; font-size: 8.5px; }
+
+/* Mantener visibles los detalles avanzados solo cuando una acción los necesita. */
+.flujo-etapas-completo, .modulo-guia, .produccion-etapas { max-width: 100%; }
+
+@media (max-width: 1100px) {
+  .kpis-simples { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .proceso-simple { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .proceso-simple > i { display: none; }
+  .pedido-resumen-simple { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .pedido-resumen-simple > div:nth-child(2) { border-right: 0; }
+  .pedido-resumen-simple > div:nth-child(-n+2) { border-bottom: 1px solid #e7edf2; }
 }
-.flujo-etapas-completo .flujo-flecha { display: none; }
-.flujo-etapas-completo .flujo-etapa { min-height: 96px; }
-.dashboard-acciones-rol { margin-top: 14px; padding-top: 13px; border-top: 1px solid #e7edf3; }
-.flujo-negocio-mini { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 14px; font-size: 9px; color: #7790a3; }
-.flujo-negocio-mini span:not(.actual):not(.hecho) { color: #8ca0b0; }
-.flujo-negocio-mini .hecho,.flujo-negocio-mini .actual { padding: 6px 9px; border-radius: 999px; font-weight: 700; }
-.flujo-negocio-mini .hecho { background: #e7f7ef; color: #238c67; }
-.flujo-negocio-mini .actual { background: #e9f4ff; color: #0c71c0; }
-.resumen-operacion { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; padding: 11px 12px; border: 1px solid #dbe7f0; border-radius: 7px; background: #f7fbff; }
-.resumen-operacion span { font-size: 9px; color: #6d8497; }
-.resumen-operacion strong { font-size: 15px; color: #096ebc; }
-@media (max-width: 1180px) { .flujo-etapas-completo { grid-template-columns: repeat(2,minmax(180px,1fr)); } }
-@media (max-width: 700px) { .flujo-etapas-completo { grid-template-columns: 1fr; } }
+
+@media (max-width: 760px) {
+  .contexto-topbar small { display: none; }
+  .gestion-simple-cabecera, .ayuda-simple, .soporte-simple { align-items: flex-start; flex-direction: column; }
+  .proceso-simple, .kpis-simples, .pedido-resumen-simple, .accesos-grid { grid-template-columns: 1fr; }
+  .pedido-resumen-simple > div { border-right: 0; border-bottom: 1px solid #e7edf2; }
+  .pedido-resumen-simple > div:last-child { border-bottom: 0; }
+  .accion-simple-pedido { grid-template-columns: 1fr; }
+  .accion-simple-icono { display: none; }
+  .accion-simple-botones { justify-content: flex-start; }
+}
