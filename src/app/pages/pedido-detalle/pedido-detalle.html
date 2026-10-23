@@ -52,6 +52,7 @@
         <dt>Servicio</dt><dd>{{ p.nombreServicio }}</dd>
         <dt>Cantidad</dt><dd>{{ p.cantidad }}</dd>
         <dt>Precio unitario</dt><dd>{{ p.precioUnitario | currency: 'PEN' : 'S/' }}</dd>
+        @if (p.detallePrecio) { <dt>Cálculo del precio</dt><dd><div class="detalle-precio-guardado">{{ p.detallePrecio }}</div></dd> }
         <dt>Total</dt><dd><strong class="total-destacado">{{ p.total | currency: 'PEN' : 'S/' }}</strong></dd>
         <dt>Fecha de entrega</dt><dd>{{ p.fechaEntrega ? (p.fechaEntrega | date:'dd/MM/yyyy') : 'Sin fecha' }}</dd>
         <dt>Detalle del trabajo</dt><dd>{{ p.especificaciones || 'Sin indicaciones adicionales' }}</dd>
