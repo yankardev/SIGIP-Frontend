@@ -17,12 +17,14 @@ interface GrupoMenu {
 }
 
 const MENU: Opcion[] = [
-  { ruta: '/dashboard', texto: 'Dashboard', icono: '⌂', roles: ['ADMIN', 'VENTAS'], grupo: 'GENERAL' },
-  { ruta: '/catalogo', texto: 'Catálogo de servicios', icono: '1', roles: ['ADMIN', 'VENTAS'], grupo: 'COMERCIAL' },
-  { ruta: '/pedidos', texto: 'Pedidos y pagos', icono: '2', roles: ['ADMIN', 'VENTAS', 'OPERACIONES'], grupo: 'COMERCIAL' },
-  { ruta: '/disenos', texto: 'Diseño y validación', icono: '3', roles: ['ADMIN', 'OPERACIONES'], grupo: 'OPERACIONES' },
-  { ruta: '/produccion', texto: 'Producción', icono: '4', roles: ['ADMIN', 'OPERACIONES'], grupo: 'OPERACIONES' },
-  { ruta: '/inventario', texto: 'Inventario', icono: '5', roles: ['ADMIN', 'OPERACIONES'], grupo: 'OPERACIONES' },
+  { ruta: '/dashboard', texto: 'Dashboard', icono: '⌂', roles: ['ADMIN', 'VENTAS', 'OPERACIONES'], grupo: 'GENERAL' },
+  { ruta: '/clientes', texto: 'Clientes', icono: '1', roles: ['ADMIN', 'VENTAS'], grupo: 'COMERCIAL' },
+  { ruta: '/catalogo', texto: 'Catálogo de servicios', icono: '2', roles: ['ADMIN', 'VENTAS'], grupo: 'COMERCIAL' },
+  { ruta: '/cotizaciones', texto: 'Cotizaciones', icono: '3', roles: ['ADMIN', 'VENTAS'], grupo: 'COMERCIAL' },
+  { ruta: '/pedidos', texto: 'Pedidos, pagos y entrega', icono: '4', roles: ['ADMIN', 'VENTAS', 'OPERACIONES'], grupo: 'COMERCIAL' },
+  { ruta: '/disenos', texto: 'Diseño y validación', icono: '5', roles: ['ADMIN', 'OPERACIONES'], grupo: 'OPERACIONES' },
+  { ruta: '/produccion', texto: 'Producción', icono: '6', roles: ['ADMIN', 'OPERACIONES'], grupo: 'OPERACIONES' },
+  { ruta: '/inventario', texto: 'Inventario', icono: '7', roles: ['ADMIN', 'OPERACIONES'], grupo: 'OPERACIONES' },
   { ruta: '/reportes', texto: 'Reportes', icono: '▥', roles: ['ADMIN'], grupo: 'GESTION' },
   { ruta: '/usuarios', texto: 'Usuarios y roles', icono: '◎', roles: ['ADMIN'], grupo: 'GESTION' },
   { ruta: '/notificaciones', texto: 'Notificaciones', icono: '✉', roles: ['ADMIN', 'VENTAS', 'OPERACIONES'], grupo: 'GESTION' },
@@ -40,8 +42,8 @@ export class Shell implements OnInit {
 
   protected readonly grupos: GrupoMenu[] = [
     { id: 'GENERAL', texto: 'GENERAL' },
-    { id: 'COMERCIAL', texto: 'COMERCIAL · INICIO DEL FLUJO' },
-    { id: 'OPERACIONES', texto: 'OPERACIONES · CONTINUACIÓN' },
+    { id: 'COMERCIAL', texto: 'COMERCIAL · CLIENTE A PEDIDO' },
+    { id: 'OPERACIONES', texto: 'OPERACIONES · PEDIDO A ENTREGA' },
     { id: 'GESTION', texto: 'SUPERVISIÓN Y CONTROL' },
   ];
 
