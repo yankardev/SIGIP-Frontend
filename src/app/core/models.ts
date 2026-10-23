@@ -112,8 +112,11 @@ export interface PedidoRequest {
   cantidad: number;
   especificaciones: string;
   fechaEntrega: string | null;
+  /** Compatibilidad con backend anterior; la versión actual recalcula usando opcionesSeleccionadas. */
   precioUnitarioAcordado?: number | null;
   detallePrecio?: string | null;
+  /** IDs de los combobox elegidos para servicios personalizables. */
+  opcionesSeleccionadas?: number[] | null;
 }
 
 export const METODOS_PAGO = ['YAPE', 'PLIN', 'TRANSFERENCIA', 'EFECTIVO'] as const;
