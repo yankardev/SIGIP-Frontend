@@ -24,7 +24,7 @@
     @for (s of visibles(); track s.idservicio) {
       <article class="tarjeta servicio servicio-interno servicio-visual">
         <div class="servicio-imagen-real">
-          <img [src]="imagen(s)" [alt]="s.nombre" loading="lazy" />
+          <img [src]="imagen(s)" [alt]="s.nombre" loading="lazy" (error)="imagenError($event)" />
           <span class="categoria-imagen">{{ s.categoria }}</span>
           @if (s.personalizable) { <span class="tipo-precio-badge">Personalizable</span> }
         </div>
@@ -51,7 +51,7 @@
   <app-modal [titulo]="'Registrar pedido · ' + s.nombre" (cerrar)="cerrar()">
     <form (ngSubmit)="solicitar()" #f="ngForm" class="form-pedido-rapido">
       <div class="resumen-servicio-modal resumen-servicio-visual">
-        <img [src]="imagen(s)" [alt]="s.nombre" />
+        <img [src]="imagen(s)" [alt]="s.nombre" (error)="imagenError($event)" />
         <div><span>Servicio</span><strong>{{ s.nombre }}</strong><small>{{ s.categoria }} · {{ s.personalizable ? 'precio configurable' : 'precio fijo' }}</small></div>
       </div>
 
@@ -91,7 +91,7 @@
       </section>
 
       @if (s.personalizable && detallePrecio()) { <p class="detalle-calculo"><strong>Detalle:</strong> {{ detallePrecio() }}</p> }
-      <p class="nota-simple">El precio y las opciones seleccionadas quedarán guardados en la ficha del pedido para evitar cobros ambiguos o cálculos repetidos.</p>
+      <p class="nota-simple">SIGIP vuelve a validar en el servidor las opciones elegidas y el precio final antes de guardar el pedido.</p>
       <div class="acciones"><button type="button" class="btn btn-secundario" (click)="cerrar()">Cancelar</button><button class="btn btn-primario" [disabled]="guardando() || cargandoOpciones() || f.invalid || !idcliente || !opcionesCompletas()">{{ guardando() ? 'Registrando…' : 'Registrar pedido' }}</button></div>
     </form>
   </app-modal>
