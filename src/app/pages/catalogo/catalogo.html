@@ -1,15 +1,15 @@
 <div class="cabecera-pagina catalogo-cabecera">
   <div>
-    <span class="seccion-kicker">ETAPA 1 · GESTIÓN COMERCIAL</span>
+    <span class="seccion-kicker">GESTIÓN COMERCIAL</span>
     <h1>Catálogo de servicios</h1>
-    <p class="texto-suave">Selecciona el servicio solicitado para iniciar el registro de un nuevo pedido.</p>
+    <p class="texto-suave">Selecciona el servicio solicitado. SIGIP decide si debe cotizarse o puede convertirse directamente en pedido.</p>
   </div>
   <input class="buscador" type="search" placeholder="Buscar servicio..." [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" />
 </div>
 
 <section class="modulo-guia tarjeta modulo-guia-catalogo">
-  <div class="modulo-guia-titulo"><span>1</span><div><strong>Inicio del proceso</strong><small>Ventas identifica la necesidad del cliente y selecciona el servicio que se utilizará en el pedido.</small></div></div>
-  <div class="guia-lineal"><span>Cliente / solicitud</span><i>→</i><span>Servicio y precio</span><i>→</i><span>Cantidad y especificaciones</span><i>→</i><span>Pedido registrado</span></div>
+  <div class="modulo-guia-titulo"><span>2</span><div><strong>Servicio solicitado</strong><small>El cliente debe estar registrado. Los trabajos especiales pasan primero por cotización; los servicios con precio fijo pueden registrarse directamente.</small></div></div>
+  <div class="guia-lineal"><span>Cliente registrado</span><i>→</i><span>Servicio</span><i>→</i><span>Cotización o pedido</span><i>→</i><span>Pago</span></div>
 </section>
 
 <div class="catalogo-toolbar-interno">
@@ -19,7 +19,7 @@
       <button type="button" class="chip" [class.chip-activo]="categoriaSeleccionada() === c.idcategoria" (click)="categoriaSeleccionada.set(c.idcategoria)">{{ c.nombre }}</button>
     }
   </div>
-  <small class="texto-suave">El precio base proviene del catálogo registrado en SIGIP.</small>
+  <small class="texto-suave">Los importes se calculan con precios del backend, no desde el navegador.</small>
 </div>
 
 @if (cargando()) {
@@ -36,9 +36,9 @@
           <div>
             <small class="texto-suave">Precio base</small>
             <div><strong class="precio">{{ s.precioBase | currency: 'PEN' : 'S/' }}</strong><small class="texto-suave"> / unidad</small></div>
-            @if (s.requiereCotizacion) { <div><span class="badge badge-aviso">Requiere cotización</span></div> }
+            @if (s.requiereCotizacion) { <div><span class="badge badge-aviso">Precio a cotizar</span></div> }
           </div>
-          <button type="button" class="btn btn-primario" (click)="abrir(s)">Crear pedido →</button>
+          <button type="button" class="btn btn-primario" (click)="abrir(s)">{{ s.requiereCotizacion ? 'Cotizar →' : 'Crear pedido →' }}</button>
         </div>
       </article>
     } @empty {
@@ -48,16 +48,15 @@
 }
 
 @if (elegido(); as s) {
-  <app-modal [titulo]="'Registrar pedido · ' + s.nombre" (cerrar)="elegido.set(null)">
-    <form (ngSubmit)="solicitar()">
-      <div class="resumen-servicio-modal">
-        <span>Servicio</span><strong>{{ s.nombre }}</strong><small>{{ s.categoria }} · {{ s.precioBase | currency: 'PEN' : 'S/' }} por unidad</small>
-      </div>
-      <label class="campo"><span>Cantidad</span><input type="number" name="cantidad" min="1" max="100000" required [(ngModel)]="cantidad" /></label>
-      <label class="campo"><span>Especificaciones del trabajo</span><textarea name="especificaciones" rows="3" maxlength="1000" [(ngModel)]="especificaciones" placeholder="Medidas, colores, material, acabado, fecha requerida..."></textarea></label>
-      <div class="total-pedido-modal"><span>Total estimado</span><strong>{{ total() | currency: 'PEN' : 'S/' }}</strong></div>
-      <p class="alerta alerta-flujo">Después de registrar el pedido, continúa con el registro y verificación del pago desde el detalle del pedido.</p>
-      <div class="acciones"><button type="button" class="btn btn-secundario" (click)="elegido.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="guardando() || !cantidad || cantidad < 1">{{ guardando() ? 'Registrando…' : 'Registrar y continuar →' }}</button></div>
+  <app-modal [titulo]="'Nuevo pedido · ' + s.nombre" (cerrar)="elegido.set(null)">
+    <form (ngSubmit)="solicitar()" #f="ngForm">
+      <div class="resumen-servicio-modal"><span>Servicio</span><strong>{{ s.nombre }}</strong><small>{{ s.categoria }} · {{ s.precioBase | currency: 'PEN' : 'S/' }} por unidad</small></div>
+      <label class="campo"><span>Cliente</span><select name="idcliente" required [(ngModel)]="idcliente"><option [ngValue]="0" disabled>Seleccionar cliente</option>@for (c of clientes(); track c.idcliente) { <option [ngValue]="c.idcliente">{{ c.razonSocial }} · {{ c.numeroDocumento }}</option> }</select></label>
+      <div class="rejilla-2"><label class="campo"><span>Cantidad</span><input type="number" name="cantidad" min="1" max="100000" required [(ngModel)]="cantidad" /></label><label class="campo"><span>Fecha solicitada de entrega</span><input type="date" name="fechaEntrega" [(ngModel)]="fechaEntrega" /></label></div>
+      <label class="campo"><span>Especificaciones del trabajo</span><textarea name="especificaciones" rows="3" maxlength="1000" [(ngModel)]="especificaciones" placeholder="Medidas, colores, material, acabado, archivo recibido..."></textarea></label>
+      <div class="total-pedido-modal"><span>Total del pedido</span><strong>{{ total() | currency: 'PEN' : 'S/' }}</strong></div>
+      <p class="alerta alerta-flujo">Al guardar queda REGISTRADO. El siguiente paso comercial será registrar y verificar el pago.</p>
+      <div class="acciones"><button type="button" class="btn btn-secundario" (click)="elegido.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="guardando() || f.invalid || !idcliente">{{ guardando() ? 'Registrando…' : 'Registrar pedido →' }}</button></div>
     </form>
   </app-modal>
 }
