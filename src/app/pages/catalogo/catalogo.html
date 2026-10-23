@@ -2,7 +2,7 @@
   <div>
     <span class="seccion-kicker">NUEVO PEDIDO</span>
     <h1>Selecciona el servicio</h1>
-    <p class="texto-suave">Elige qué necesita el cliente y registra el trabajo en pocos pasos.</p>
+    <p class="texto-suave">Los servicios fijos se registran directo. Los personalizables calculan el precio según las opciones elegidas.</p>
   </div>
   <input class="buscador" type="search" placeholder="Buscar servicio..." [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" />
 </div>
@@ -14,7 +14,7 @@
       <button type="button" class="chip" [class.chip-activo]="categoriaSeleccionada() === c.idcategoria" (click)="categoriaSeleccionada.set(c.idcategoria)">{{ c.nombre }}</button>
     }
   </div>
-  <small class="texto-suave">Los precios se obtienen del catálogo registrado en SIGIP.</small>
+  <div class="leyenda-precios"><span><i class="punto-precio fijo"></i> Precio fijo</span><span><i class="punto-precio configurable"></i> Personalizable</span></div>
 </div>
 
 @if (cargando()) {
@@ -22,18 +22,23 @@
 } @else {
   <div class="rejilla-tarjetas catalogo-interno catalogo-simple">
     @for (s of visibles(); track s.idservicio) {
-      <article class="tarjeta servicio servicio-interno">
-        <div class="servicio-imagen"><span>▧</span><small>{{ s.categoria }}</small></div>
-        <span class="texto-suave pequeno">{{ s.categoria }}</span>
-        <h3>{{ s.nombre }}</h3>
-        <p class="texto-suave">{{ s.descripcion }}</p>
-        <div class="servicio-pie">
-          <div>
-            <small class="texto-suave">Precio base</small>
-            <div><strong class="precio">{{ s.precioBase | currency: 'PEN' : 'S/' }}</strong><small class="texto-suave"> / unidad</small></div>
-            @if (s.requiereCotizacion) { <div><span class="badge badge-aviso">Precio especial</span></div> }
+      <article class="tarjeta servicio servicio-interno servicio-visual">
+        <div class="servicio-imagen-real">
+          <img [src]="imagen(s)" [alt]="s.nombre" loading="lazy" />
+          <span class="categoria-imagen">{{ s.categoria }}</span>
+          @if (s.personalizable) { <span class="tipo-precio-badge">Personalizable</span> }
+        </div>
+        <div class="servicio-cuerpo">
+          <span class="texto-suave pequeno">{{ s.categoria }}</span>
+          <h3>{{ s.nombre }}</h3>
+          <p class="texto-suave descripcion-servicio">{{ s.descripcion }}</p>
+          <div class="servicio-pie">
+            <div>
+              <small class="texto-suave">{{ s.personalizable ? 'Desde' : 'Precio fijo' }}</small>
+              <div><strong class="precio">{{ s.precioBase | currency: 'PEN' : 'S/' }}</strong><small class="texto-suave"> / unidad</small></div>
+            </div>
+            <button type="button" class="btn btn-primario" (click)="abrir(s)">{{ s.personalizable ? 'Personalizar' : 'Seleccionar' }}</button>
           </div>
-          <button type="button" class="btn btn-primario" (click)="abrir(s)">{{ s.requiereCotizacion ? 'Definir precio' : 'Seleccionar' }}</button>
         </div>
       </article>
     } @empty {
@@ -43,15 +48,51 @@
 }
 
 @if (elegido(); as s) {
-  <app-modal [titulo]="'Registrar pedido · ' + s.nombre" (cerrar)="elegido.set(null)">
-    <form (ngSubmit)="solicitar()" #f="ngForm">
-      <div class="resumen-servicio-modal"><span>Servicio</span><strong>{{ s.nombre }}</strong><small>{{ s.categoria }} · {{ s.precioBase | currency: 'PEN' : 'S/' }} por unidad</small></div>
+  <app-modal [titulo]="'Registrar pedido · ' + s.nombre" (cerrar)="cerrar()">
+    <form (ngSubmit)="solicitar()" #f="ngForm" class="form-pedido-rapido">
+      <div class="resumen-servicio-modal resumen-servicio-visual">
+        <img [src]="imagen(s)" [alt]="s.nombre" />
+        <div><span>Servicio</span><strong>{{ s.nombre }}</strong><small>{{ s.categoria }} · {{ s.personalizable ? 'precio configurable' : 'precio fijo' }}</small></div>
+      </div>
+
       <label class="campo"><span>Cliente</span><select name="idcliente" required [(ngModel)]="idcliente"><option [ngValue]="0" disabled>Seleccionar cliente</option>@for (c of clientes(); track c.idcliente) { <option [ngValue]="c.idcliente">{{ c.razonSocial }} · {{ c.numeroDocumento }}</option> }</select></label>
+
+      @if (s.personalizable) {
+        <section class="configurador-precio">
+          <div class="configurador-cabecera"><div><strong>Personalización</strong><small>Elige una opción de cada grupo. El precio se actualiza automáticamente.</small></div><span class="badge badge-info">Cálculo automático</span></div>
+          @if (cargandoOpciones()) {
+            <p class="texto-suave">Cargando opciones…</p>
+          } @else {
+            <div class="rejilla-2 opciones-personalizacion">
+              @for (g of gruposOpciones(); track g.grupo) {
+                <label class="campo">
+                  <span>{{ g.grupo }}</span>
+                  <select [name]="'opcion-' + g.grupo" required [ngModel]="selecciones[g.grupo]" (ngModelChange)="selecciones[g.grupo] = $event">
+                    @for (o of g.opciones; track o.idopcion) {
+                      <option [ngValue]="o.idopcion">{{ o.nombre }}{{ o.incremento > 0 ? '  (+ S/ ' + o.incremento.toFixed(2) + ')' : '  (incluido)' }}</option>
+                    }
+                  </select>
+                </label>
+              }
+            </div>
+          }
+        </section>
+      }
+
       <div class="rejilla-2"><label class="campo"><span>Cantidad</span><input type="number" name="cantidad" min="1" max="100000" required [(ngModel)]="cantidad" /></label><label class="campo"><span>Fecha de entrega</span><input type="date" name="fechaEntrega" [(ngModel)]="fechaEntrega" /></label></div>
-      <label class="campo"><span>Detalle del trabajo</span><textarea name="especificaciones" rows="3" maxlength="1000" [(ngModel)]="especificaciones" placeholder="Medidas, material, colores, acabado u observaciones"></textarea></label>
-      <div class="total-pedido-modal"><span>Total</span><strong>{{ total() | currency: 'PEN' : 'S/' }}</strong></div>
-      <p class="nota-simple">Después podrás completar pago, producción y entrega desde la ficha del pedido.</p>
-      <div class="acciones"><button type="button" class="btn btn-secundario" (click)="elegido.set(null)">Cancelar</button><button class="btn btn-primario" [disabled]="guardando() || f.invalid || !idcliente">{{ guardando() ? 'Registrando…' : 'Registrar pedido' }}</button></div>
+      <label class="campo"><span>Detalle del trabajo</span><textarea name="especificaciones" rows="3" maxlength="1000" [(ngModel)]="especificaciones" placeholder="Texto, colores, medidas, referencia del cliente u observaciones"></textarea></label>
+
+      <section class="resumen-precio-pedido">
+        <div><span>Precio base</span><strong>{{ s.precioBase | currency: 'PEN' : 'S/' }}</strong></div>
+        @if (s.personalizable) { <div><span>Adicionales</span><strong>+ {{ adicionalUnitario() | currency: 'PEN' : 'S/' }}</strong></div> }
+        <div><span>Precio unitario</span><strong>{{ precioUnitario() | currency: 'PEN' : 'S/' }}</strong></div>
+        <div><span>Cantidad</span><strong>{{ cantidad || 0 }}</strong></div>
+        <div class="total-final"><span>Total del pedido</span><strong>{{ total() | currency: 'PEN' : 'S/' }}</strong></div>
+      </section>
+
+      @if (s.personalizable && detallePrecio()) { <p class="detalle-calculo"><strong>Detalle:</strong> {{ detallePrecio() }}</p> }
+      <p class="nota-simple">El precio y las opciones seleccionadas quedarán guardados en la ficha del pedido para evitar cobros ambiguos o cálculos repetidos.</p>
+      <div class="acciones"><button type="button" class="btn btn-secundario" (click)="cerrar()">Cancelar</button><button class="btn btn-primario" [disabled]="guardando() || cargandoOpciones() || f.invalid || !idcliente || !opcionesCompletas()">{{ guardando() ? 'Registrando…' : 'Registrar pedido' }}</button></div>
     </form>
   </app-modal>
 }
