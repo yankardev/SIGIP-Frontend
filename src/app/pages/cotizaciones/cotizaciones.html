@@ -1,0 +1,32 @@
+<div class="cabecera-pagina">
+  <div><span class="seccion-kicker">GESTIÓN COMERCIAL</span><h1>Cotizaciones</h1><p class="texto-suave">Define el precio acordado, valida la propuesta y conviértela en pedido sin volver a registrar la información.</p></div>
+  <div class="fila"><select [(ngModel)]="filtro" (ngModelChange)="cargar()"><option value="">Todos los estados</option>@for (e of estados; track e) { <option [value]="e">{{ e | etiqueta }}</option> }</select><button class="btn btn-primario" (click)="nueva()">＋ Nueva cotización</button></div>
+</div>
+
+<div class="flujo-negocio-mini"><span class="hecho">1 Cliente</span><span>→</span><span class="actual">2 Cotización</span><span>→</span><span>3 Pedido</span><span>→</span><span>4 Pago</span></div>
+
+<div class="tarjeta sin-relleno"><div class="tabla-contenedor"><table class="tabla">
+  <thead><tr><th>#</th><th>Cliente</th><th>Servicio</th><th>Cant.</th><th>Total</th><th>Vigencia</th><th>Estado</th><th>Acciones</th></tr></thead>
+  <tbody>@for (c of cotizaciones(); track c.idcotizacion) {
+    <tr><td><strong>#{{ c.idcotizacion }}</strong></td><td>{{ c.cliente }}</td><td>{{ c.nombreServicio }}</td><td>{{ c.cantidad }}</td><td><strong>{{ c.total | currency:'PEN':'S/' }}</strong></td><td>{{ c.vigenciaHasta | date:'dd/MM/yyyy' }}</td><td><app-estado [valor]="c.estado" /></td>
+      <td class="num nowrap">
+        @if (c.estado === 'BORRADOR') { <button class="btn btn-secundario btn-pequeno" (click)="editar(c)">Editar</button><button class="btn btn-primario btn-pequeno" (click)="aprobar(c)">Aprobar</button><button class="btn btn-peligro-suave btn-pequeno" (click)="eliminar(c)">Eliminar</button> }
+        @if (c.estado === 'APROBADA') { <button class="btn btn-primario btn-pequeno" (click)="convertir(c)">Convertir en pedido</button><button class="btn btn-secundario btn-pequeno" (click)="rechazar(c)">Rechazar</button> }
+      </td>
+    </tr>
+  } @empty { <tr><td colspan="8" class="vacio">No hay cotizaciones. Úsalas para trabajos con precio especial o requisitos personalizados.</td></tr> }</tbody>
+</table></div></div>
+
+@if (modal()) {
+  <app-modal [titulo]="editandoId ? 'Editar cotización' : 'Nueva cotización'" (cerrar)="modal.set(false)">
+    <form (ngSubmit)="guardar()" #f="ngForm">
+      <label class="campo"><span>Cliente</span><select name="idcliente" required [(ngModel)]="form.idcliente"><option [ngValue]="0" disabled>Seleccionar cliente</option>@for (c of clientes(); track c.idcliente) { <option [ngValue]="c.idcliente">{{ c.razonSocial }} · {{ c.numeroDocumento }}</option> }</select></label>
+      <label class="campo"><span>Servicio</span><select name="idservicio" required [(ngModel)]="form.idservicio" (ngModelChange)="form.precioUnitarioAcordado = null"><option [ngValue]="0" disabled>Seleccionar servicio</option>@for (s of servicios(); track s.idservicio) { <option [ngValue]="s.idservicio">{{ s.nombre }} · {{ s.precioBase | currency:'PEN':'S/' }}</option> }</select></label>
+      <div class="rejilla-2"><label class="campo"><span>Cantidad</span><input type="number" name="cantidad" min="1" required [(ngModel)]="form.cantidad" /></label><label class="campo"><span>Precio unitario acordado</span><input type="number" step="0.01" min="0.01" name="precio" [(ngModel)]="form.precioUnitarioAcordado" [placeholder]="'Base S/ ' + precioBase()" /></label></div>
+      <label class="campo"><span>Especificaciones</span><textarea name="especificaciones" rows="3" [(ngModel)]="form.especificaciones" placeholder="Medidas, material, colores, acabados, cantidad por modelo..."></textarea></label>
+      <label class="campo"><span>Vigencia</span><input type="date" name="vigencia" [(ngModel)]="form.vigenciaHasta" /></label>
+      <div class="resumen-operacion"><span>Total calculado por SIGIP</span><strong>{{ totalEstimado() | currency:'PEN':'S/' }}</strong></div>
+      <div class="acciones"><button type="button" class="btn btn-secundario" (click)="modal.set(false)">Cancelar</button><button class="btn btn-primario" [disabled]="trabajando() || f.invalid || !form.idcliente || !form.idservicio">Guardar cotización</button></div>
+    </form>
+  </app-modal>
+}
