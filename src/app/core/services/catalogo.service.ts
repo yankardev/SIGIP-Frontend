@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { Categoria, Servicio, ServicioRequest } from '../models';
+import { Categoria, Servicio, ServicioOpcion, ServicioRequest } from '../models';
 
-/** catalog-service: categorías y servicios de impresión. */
+/** catalog-service: categorías, servicios y opciones de personalización. */
 @Injectable({ providedIn: 'root' })
 export class CatalogoService {
   private readonly http = inject(HttpClient);
@@ -29,6 +29,9 @@ export class CatalogoService {
   }
   servicio(id: number) {
     return this.http.get<Servicio>(`${this.url}/servicios/${id}`);
+  }
+  opciones(id: number) {
+    return this.http.get<ServicioOpcion[]>(`${this.url}/servicios/${id}/opciones`);
   }
   guardarServicio(datos: ServicioRequest, id?: number) {
     return id
