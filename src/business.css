@@ -1,0 +1,18 @@
+/* Ajustes del flujo empresarial completo de SIGIP */
+.flujo-etapas-completo {
+  grid-template-columns: repeat(4, minmax(145px, 1fr));
+  gap: 10px;
+}
+.flujo-etapas-completo .flujo-flecha { display: none; }
+.flujo-etapas-completo .flujo-etapa { min-height: 96px; }
+.dashboard-acciones-rol { margin-top: 14px; padding-top: 13px; border-top: 1px solid #e7edf3; }
+.flujo-negocio-mini { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 14px; font-size: 9px; color: #7790a3; }
+.flujo-negocio-mini span:not(.actual):not(.hecho) { color: #8ca0b0; }
+.flujo-negocio-mini .hecho,.flujo-negocio-mini .actual { padding: 6px 9px; border-radius: 999px; font-weight: 700; }
+.flujo-negocio-mini .hecho { background: #e7f7ef; color: #238c67; }
+.flujo-negocio-mini .actual { background: #e9f4ff; color: #0c71c0; }
+.resumen-operacion { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; padding: 11px 12px; border: 1px solid #dbe7f0; border-radius: 7px; background: #f7fbff; }
+.resumen-operacion span { font-size: 9px; color: #6d8497; }
+.resumen-operacion strong { font-size: 15px; color: #096ebc; }
+@media (max-width: 1180px) { .flujo-etapas-completo { grid-template-columns: repeat(2,minmax(180px,1fr)); } }
+@media (max-width: 700px) { .flujo-etapas-completo { grid-template-columns: 1fr; } }
