@@ -12,7 +12,6 @@ import { EstadoBadge } from '../../shared/estado-badge';
 import { EtiquetaPipe } from '../../shared/etiqueta.pipe';
 import { Modal } from '../../shared/modal';
 
-/** Ficha interna del pedido: avance, pagos, diseños y acciones según estado. */
 @Component({
   selector: 'app-pedido-detalle',
   imports: [CurrencyPipe, DatePipe, FormsModule, RouterLink, EstadoBadge, EtiquetaPipe, Modal],
@@ -33,24 +32,22 @@ export class PedidoDetalle implements OnInit {
   protected readonly listaDisenos = signal<Diseno[]>([]);
   protected readonly trabajando = signal(false);
 
-  /** Flujo completo del pedido definido por el proyecto SIGIP. */
   protected readonly pasos: EstadoPedido[] = ESTADOS_PEDIDO.filter((e) => e !== 'CANCELADO');
   protected readonly indiceActual = computed(() => {
     const estado = this.pedido()?.estado;
     return estado ? this.pasos.indexOf(estado) : -1;
   });
-  protected readonly editable = computed(() => this.pedido()?.estado === 'REGISTRADO');
-  protected readonly cancelable = computed(() => this.pedido()?.siguientesEstados.includes('CANCELADO') ?? false);
+  protected readonly esComercial = computed(() => this.auth.esAdmin() || this.auth.tieneRol('VENTAS'));
+  protected readonly esOperativo = computed(() => this.auth.esAdmin() || this.auth.tieneRol('OPERACIONES'));
+  protected readonly editable = computed(() => this.esComercial() && this.pedido()?.estado === 'REGISTRADO');
+  protected readonly cancelable = computed(() => this.esComercial() && (this.pedido()?.siguientesEstados.includes('CANCELADO') ?? false));
 
-  protected readonly modal = signal<'pago' | 'editar' | 'estado' | 'verificar' | null>(null);
+  protected readonly modal = signal<'pago' | 'editar' | 'verificar' | null>(null);
   protected pago = { monto: 0, metodo: 'YAPE' as MetodoPago, numeroOperacion: '' };
-  protected edicion = { cantidad: 1, especificaciones: '' };
-  protected cambio = { estado: '' as EstadoPedido | '', observacion: '' };
+  protected edicion = { cantidad: 1, especificaciones: '', fechaEntrega: '' };
   protected verificacion = { pago: null as Pago | null, observacion: '' };
 
-  ngOnInit(): void {
-    this.cargar();
-  }
+  ngOnInit(): void { this.cargar(); }
 
   cargar(): void {
     const id = Number(this.id());
@@ -62,45 +59,50 @@ export class PedidoDetalle implements OnInit {
       },
     });
     this.ventas.pagos(id).subscribe({ next: (l) => this.pagos.set(l), error: () => this.pagos.set([]) });
-    this.disenos.listar(id).subscribe({ next: (l) => this.listaDisenos.set(l), error: () => this.listaDisenos.set([]) });
+    if (this.esOperativo()) {
+      this.disenos.listar(id).subscribe({ next: (l) => this.listaDisenos.set(l), error: () => this.listaDisenos.set([]) });
+    } else {
+      this.listaDisenos.set([]);
+    }
   }
 
   abrirPago(): void {
     this.pago = { monto: this.pedido()?.total ?? 0, metodo: 'YAPE', numeroOperacion: '' };
     this.modal.set('pago');
   }
+
   abrirEdicion(): void {
     const p = this.pedido();
-    this.edicion = { cantidad: p?.cantidad ?? 1, especificaciones: p?.especificaciones ?? '' };
+    this.edicion = {
+      cantidad: p?.cantidad ?? 1,
+      especificaciones: p?.especificaciones ?? '',
+      fechaEntrega: p?.fechaEntrega?.slice(0, 10) ?? '',
+    };
     this.modal.set('editar');
   }
-  abrirCambioEstado(): void {
-    this.cambio = { estado: this.pedido()?.siguientesEstados.find((e) => e !== 'CANCELADO') ?? '', observacion: '' };
-    this.modal.set('estado');
-  }
+
   abrirVerificacion(pago: Pago): void {
     this.verificacion = { pago, observacion: '' };
     this.modal.set('verificar');
   }
 
   registrarPago(): void {
-    this.ejecutar(this.ventas.registrarPago(Number(this.id()), this.pago), 'Pago registrado: queda pendiente de verificación');
+    this.ejecutar(this.ventas.registrarPago(Number(this.id()), this.pago), 'Pago registrado: pendiente de verificación');
   }
 
   guardarEdicion(): void {
     const p = this.pedido()!;
-    this.ejecutar(
-      this.ventas.actualizar(p.idpedido, { idservicio: p.idservicio, ...this.edicion }),
-      'Pedido actualizado',
-    );
-  }
-
-  cambiarEstado(): void {
-    if (!this.cambio.estado) return;
-    this.ejecutar(
-      this.ventas.cambiarEstado(Number(this.id()), this.cambio.estado, this.cambio.observacion),
-      'Estado actualizado',
-    );
+    if (!p.idcliente) {
+      this.notificador.error(null, 'Este pedido antiguo no tiene cliente comercial asociado');
+      return;
+    }
+    this.ejecutar(this.ventas.actualizar(p.idpedido, {
+      idcliente: p.idcliente,
+      idservicio: p.idservicio,
+      cantidad: this.edicion.cantidad,
+      especificaciones: this.edicion.especificaciones,
+      fechaEntrega: this.edicion.fechaEntrega ? `${this.edicion.fechaEntrega}T18:00:00` : null,
+    }), 'Pedido actualizado');
   }
 
   verificar(aprobado: boolean): void {
@@ -108,8 +110,13 @@ export class PedidoDetalle implements OnInit {
     if (!pago) return;
     this.ejecutar(
       this.ventas.verificarPago(pago.idpago, aprobado, this.verificacion.observacion),
-      aprobado ? 'Pago verificado: el pedido quedó confirmado' : 'Pago rechazado',
+      aprobado ? 'Pago verificado: el pedido quedó confirmado para Operaciones' : 'Pago rechazado',
     );
+  }
+
+  entregar(): void {
+    if (!confirm('¿Confirmar que el trabajo fue entregado al cliente?')) return;
+    this.ejecutar(this.ventas.entregar(Number(this.id())), 'Entrega registrada. Proceso del pedido completado.');
   }
 
   cancelar(): void {
