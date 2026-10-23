@@ -23,7 +23,8 @@
               "src/internal.css",
               "src/process.css",
               "src/roles.css",
-              "src/business.css"
+              "src/business.css",
+              "src/catalog-pricing.css"
             ]
           },
           "configurations": {
